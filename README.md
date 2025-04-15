@@ -4,7 +4,7 @@
   - Git Branch Name (will compile, requires Rust, Yarn)
   - Git Commit Hash (will compile, requires Rust, Yarn)
   - Local Atlaspack sources
-  - ~Super Package (todo maybe?)
+  - ~Super Package~ (todo maybe?)
 - Link Version Into Current Project
 - Run Commands with Specific Version of Atlaspack
 
@@ -36,7 +36,7 @@ curl -L https://github.com/alshdavid/atlaspack-version-manager/releases/download
 
 ```bash
 # Run this before the CLI will work
-eval "$(./apvm env -s bash)"
+eval "$(apvm env -s bash)"
 
 # Install Atlaspack from atlassian-labs/atlaspack
 # Versions obtained from git will build first
