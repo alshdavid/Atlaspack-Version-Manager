@@ -7,3 +7,4 @@ pub mod uninstall;
 pub mod r#use;
 pub mod build;
 pub mod version;
+pub mod unload;

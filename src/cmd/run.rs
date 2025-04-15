@@ -30,11 +30,11 @@ pub async fn main(
   config: Config,
   cmd: RunCommand,
 ) -> anyhow::Result<()> {
-  if !fs::exists(&config.apvm_install_dir)? {
+  if !fs::exists(&config.apvm_active_dir)? {
     return Err(anyhow::anyhow!("No active version installed"));
   }
 
-  let link = fs::read_link(&config.apvm_install_dir)?;
+  let link = fs::read_link(&config.apvm_active_dir)?;
 
   let runtime = match &cmd.runtime {
     Runtime::Node => link.join("share").join("node"),

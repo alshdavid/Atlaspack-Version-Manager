@@ -19,6 +19,7 @@ base64 = "0.22.1"
 clap = { version = "4.5.36", features = ["derive", "env"] }
 flate2 = "1.1.1"
 homedir = "0.3.4"
+rand = "0.9.0"
 reqwest = "0.12.15"
 tar = "0.4.44"
 tokio = { version = "1.44.2", features = ["full"] }

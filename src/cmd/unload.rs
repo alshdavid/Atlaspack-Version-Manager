@@ -1,12 +1,12 @@
+use std::fs;
+
 use clap::Parser;
 
 use crate::config::Config;
 
-#[derive(Debug, Parser)]
-pub struct VersionCommand {}
-
 pub async fn main(
-  _config: Config,
+  config: Config,
 ) -> anyhow::Result<()> {
+  fs::remove_file(config.apvm_active_dir)?;
   Ok(())
 }

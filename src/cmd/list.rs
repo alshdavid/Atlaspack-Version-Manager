@@ -14,9 +14,9 @@ pub async fn main(
   println!("Atlaspack Versions Installed:");
 
   let mut active_name = String::default();
-  if fs::exists(&config.apvm_install_dir)? {
+  if fs::exists(&config.apvm_active_dir)? {
     'main: {
-      let link = fs::read_link(&config.apvm_install_dir)?;
+      let link = fs::read_link(&config.apvm_active_dir)?;
 
       if let Some(apvm_local) = &config.apvm_local {
         if link == *apvm_local {

@@ -20,10 +20,10 @@ pub async fn main(
     let Some(apvm_local) = config.apvm_local else {
       return Err(anyhow::anyhow!("$APVM_LOCAL not specified"));
     };
-    if config.apvm_install_dir.exists() {
-      fs::remove_dir_all(&config.apvm_install_dir)?;
+    if config.apvm_active_dir.exists() {
+      fs::remove_dir_all(&config.apvm_active_dir)?;
     }
-    link(&apvm_local, &config.apvm_install_dir)?;
+    link(&apvm_local, &config.apvm_active_dir)?;
     println!("Using: local ({})", apvm_local.to_str().unwrap());
     return Ok(());
 
@@ -36,11 +36,11 @@ pub async fn main(
     return Err(anyhow::anyhow!("Not installed"));
   }
 
-  if config.apvm_install_dir.exists() {
-    fs::remove_dir_all(&config.apvm_install_dir)?;
+  if config.apvm_active_dir.exists() {
+    fs::remove_dir_all(&config.apvm_active_dir)?;
   }
   
-  link(&target, &config.apvm_install_dir)?;
+  link(&target, &config.apvm_active_dir)?;
   println!("Using: {}", version);
   Ok(())
 }
