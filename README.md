@@ -38,8 +38,13 @@ curl -L https://github.com/alshdavid/atlaspack-version-manager/releases/download
 # Run this before the CLI will work
 eval "$(./apvm env -s bash)"
 
-# Install Atlaspack from "main" branch
-apvm install git:main
+# Install Atlaspack from atlassian-labs/atlaspack
+# Versions obtained from git will build first
+apvm install git:main       # main branch
+apvm install git:my-branch  # branch name
+apvm install git:d874396    # git hash
+
+# Enable downloaded version
 apvm use git:main
 
 # Proxy commands to active atlaspack
@@ -61,3 +66,19 @@ npm install @atlaspack/cli
 apvm link git:main
 apvm link local
 ```
+
+## Notes
+
+#### Building after fetching
+
+Versions obtained from git will build after being fetched. This takes a while 🙏
+
+Distributing a prebuilt "super" package is being discussed which can resolve the install times
+
+#### Eval must be run first
+
+Eval must be run before running any commands or it won't work
+
+#### Bash and Zsh supported
+
+Fish and Windows users beware
