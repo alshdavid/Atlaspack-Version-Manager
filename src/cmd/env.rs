@@ -36,7 +36,7 @@ pub async fn main(
 fn bash(config: Config) -> String {
   let exe_path = env::current_exe().unwrap();
   format!(
-r#"
+    r#"
 export APVM_SESSION={};
 export APVM_PATH={};
 trap '{} unload' EXIT;
