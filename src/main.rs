@@ -1,6 +1,7 @@
 mod cmd;
 mod config;
 mod constants;
+mod platform;
 
 use std::path::PathBuf;
 

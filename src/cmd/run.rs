@@ -47,7 +47,9 @@ pub async fn main(
   }
 
   let mut args = Vec::<String>::new();
-  if let Runtime::SystemDeno = &cmd.runtime { args.extend(vec!["--allow-all".to_string()]) }
+  if let Runtime::SystemDeno = &cmd.runtime {
+    args.extend(vec!["--allow-all".to_string()])
+  }
 
   args.push(
     link

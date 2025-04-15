@@ -23,6 +23,15 @@ pub async fn main(
     }
   }
 
+  if let Some(apvm_local) = config.apvm_local {
+    let apvm_local = apvm_local.to_str().unwrap().to_string();
+    if apvm_local == active {
+      println!("  * local ({})", apvm_local);
+    } else {
+      println!("  - local ({})", apvm_local);
+    }
+  }
+
   for entry in fs::read_dir(&config.apvm_installs_dir)? {
     let entry = entry?;
     let file_name = entry.file_name();

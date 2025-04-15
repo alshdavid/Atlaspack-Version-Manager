@@ -30,7 +30,7 @@ pub async fn main(
     let Some(apvm_local) = config.apvm_local else {
       return Err(anyhow::anyhow!("$APVM_LOCAL not specified"));
     };
-    target = apvm_local.join("packages").join("atlaspack")
+    target = apvm_local;
   }
 
   #[cfg(unix)]
