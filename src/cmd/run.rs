@@ -10,9 +10,9 @@ use crate::platform::exec::exec_blocking;
 
 #[derive(ValueEnum, Debug, Clone)]
 pub enum Runtime {
+  NodeEmbedded,
   Node,
-  SystemNode,
-  SystemDeno,
+  Deno,
 }
 
 #[derive(Debug, Parser)]
@@ -21,7 +21,7 @@ pub struct RunCommand {
   pub command: Vec<String>,
 
   /// Runtime to use
-  #[arg(short = 'r', long = "runtime", default_value = "system-node")]
+  #[arg(short = 'r', long = "runtime", default_value = "node")]
   pub runtime: Runtime,
 }
 
@@ -36,9 +36,9 @@ pub async fn main(
   let link = fs::read_link(&config.apvm_active_dir)?;
 
   let runtime = match &cmd.runtime {
-    Runtime::Node => link.join("share").join("node"),
-    Runtime::SystemNode => which::CanonicalPath::new("node")?.to_path_buf(),
-    Runtime::SystemDeno => which::CanonicalPath::new("deno")?.to_path_buf(),
+    Runtime::NodeEmbedded => link.join("share").join("node"),
+    Runtime::Node => which::CanonicalPath::new("node")?.to_path_buf(),
+    Runtime::Deno => which::CanonicalPath::new("deno")?.to_path_buf(),
   };
 
   if !fs::exists(&runtime)? {
@@ -46,7 +46,7 @@ pub async fn main(
   }
 
   let mut args = Vec::<String>::new();
-  if let Runtime::SystemDeno = &cmd.runtime {
+  if let Runtime::Deno = &cmd.runtime {
     args.extend(vec!["--allow-all".to_string()])
   }
 
