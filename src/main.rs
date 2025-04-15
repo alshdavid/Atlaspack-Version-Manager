@@ -1,6 +1,5 @@
 mod cmd;
 mod config;
-mod constants;
 mod platform;
 
 use std::path::PathBuf;
@@ -10,18 +9,20 @@ use clap::Subcommand;
 
 #[derive(Debug, Subcommand)]
 pub enum ApvmCommandType {
+  /// Print environment variables for apvm
+  Env(cmd::env::EnvCommand),
   /// Install a version of Atlaspack
   Install(cmd::install::InstallCommand),
-  /// Use an installed version of Atlaspack
-  Use(cmd::r#use::UseCommand),
+  /// Links the active version of Atlaspack into the current directory
+  Link(cmd::link::LinkCommand),
   /// List installed versions of Atlaspack
   List(cmd::list::ListCommand),
   /// Run command with an installed versions of Atlaspack
   Run(cmd::run::RunCommand),
   /// Uninstall a previously installed version of Atlaspack
   Uninstall(cmd::uninstall::UninstallCommand),
-  /// Command to env
-  Env(cmd::env::EnvCommand),
+  /// Use an installed version of Atlaspack
+  Use(cmd::r#use::UseCommand),
   /// Version information
   Version(cmd::version::VersionCommand),
 }
@@ -45,6 +46,7 @@ async fn main() -> anyhow::Result<()> {
     ApvmCommandType::Install(cmd) => cmd::install::main(config, cmd).await,
     ApvmCommandType::Use(cmd) => cmd::r#use::main(config, cmd).await,
     ApvmCommandType::List(cmd) => cmd::list::main(config, cmd).await,
+    ApvmCommandType::Link(cmd) => cmd::link::main(config, cmd).await,
     ApvmCommandType::Run(cmd) => cmd::run::main(config, cmd).await,
     ApvmCommandType::Uninstall(cmd) => cmd::uninstall::main(config, cmd).await,
     ApvmCommandType::Env(cmd) => cmd::env::main(config, cmd).await,

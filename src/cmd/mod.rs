@@ -1,5 +1,6 @@
 pub mod env;
 pub mod install;
+pub mod link;
 pub mod list;
 pub mod run;
 pub mod uninstall;
