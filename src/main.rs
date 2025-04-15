@@ -29,6 +29,10 @@ pub enum ApvmCommandType {
   Use(cmd::r#use::UseCommand),
   /// Version information
   Version,
+  /// Run "atlaspack build" using the current version of Atlaspack
+  Build,
+  /// Run "atlaspack watch" using the current version of Atlaspack
+  Watch,
 }
 
 #[derive(Parser, Debug)]
@@ -50,7 +54,8 @@ async fn main() -> anyhow::Result<()> {
 
   // Validate session is up
   if config
-    .argv.first()
+    .argv
+    .first()
     .is_some_and(|v| v != "env" && env.apvm_session.is_none())
   {
     return Err(anyhow::anyhow!("Run 'apvm env' first"));
@@ -58,8 +63,8 @@ async fn main() -> anyhow::Result<()> {
 
   // Commands to proxy
   match config.argv.first().map(|v| v.as_str()) {
-    Some("build") => return cmd::build::main(config).await,
-    Some("watch") => return cmd::build::main(config).await,
+    Some("build") => return cmd::proxy::main(config).await,
+    Some("watch") => return cmd::proxy::main(config).await,
     _ => {}
   }
 
@@ -76,5 +81,7 @@ async fn main() -> anyhow::Result<()> {
     ApvmCommandType::Unload => cmd::unload::main(config).await,
     ApvmCommandType::Env(cmd) => cmd::env::main(config, cmd).await,
     ApvmCommandType::Version => cmd::version::main(config).await,
+    ApvmCommandType::Watch => panic!(),
+    ApvmCommandType::Build => panic!(),
   }
 }

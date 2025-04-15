@@ -1,8 +1,8 @@
-pub mod build;
 pub mod env;
 pub mod install;
 pub mod link;
 pub mod list;
+pub mod proxy;
 pub mod run;
 pub mod uninstall;
 pub mod unload;
