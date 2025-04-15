@@ -37,9 +37,9 @@ pub async fn main(
   if let Some(apvm_local) = config.apvm_local {
     let apvm_local = apvm_local.to_str().unwrap().to_string();
     if apvm_local == active_name {
-      println!("  ✅ local 🍝 ({})", apvm_local);
+      println!("✅ local 🍝 ({})", apvm_local);
     } else {
-      println!("  ⏸️  local 🍝 ({})", apvm_local);
+      println!("⏸️ local 🍝 ({})", apvm_local);
     }
   }
 
@@ -52,9 +52,9 @@ pub async fn main(
     let file_name = name::decode(file_name)?;
 
     if file_name == active_name {
-      println!("  ✅ {}", file_name);
+      println!("✅ {}", file_name);
     } else {
-      println!("  ⏸️  {}", file_name);
+      println!("⏸️ {}", file_name);
     }
   }
   Ok(())

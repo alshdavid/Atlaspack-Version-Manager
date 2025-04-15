@@ -78,10 +78,10 @@ async fn install_from_git(
     return Err(anyhow::anyhow!("Version '{}' not found", &version));
   }
 
-  println!("📩 Downloading...");
+  println!("Downloading...");
   let bytes = response.bytes().await?.to_vec();
 
-  println!("📤 Extracting...");
+  println!("Extracting...");
   let tar = GzDecoder::new(bytes.as_slice());
   let mut archive = Archive::new(tar);
 
@@ -100,7 +100,7 @@ async fn install_from_git(
     ..Default::default()
   };
 
-  println!("🤖 Initializing...");
+  println!("Initializing");
   exec(["git", "init"], command_options.clone()).await?;
   exec(["git", "add", "."], command_options.clone()).await?;
   exec(
@@ -109,16 +109,16 @@ async fn install_from_git(
   )
   .await?;
 
-  println!("🧶 Installing... (yarn)");
+  println!("Installing (yarn)");
   exec(["yarn", "install"], command_options.clone()).await?;
 
-  println!("🔨 Building (Native)...");
+  println!("Building (Native)");
   exec(["yarn", "build-native-release"], command_options.clone()).await?;
 
-  println!("🔨 Building (Flow)...");
+  println!("Building (Flow)");
   exec(["yarn", "build"], command_options.clone()).await?;
 
-  println!("🔨 Building (TypeScript)...");
+  println!("Building (TypeScript)");
   exec(["yarn", "build-ts"], command_options.clone()).await?;
 
   println!("✅ Installed");

@@ -50,17 +50,16 @@ pub async fn main(
     args.extend(vec!["--allow-all".to_string()])
   }
 
-  args.push(
-    link
-      .join("packages")
-      .join("core")
-      .join("cli")
-      .join("lib")
-      .join("cli.js")
-      .to_str()
-      .unwrap()
-      .to_string(),
-  );
+  let target_entry = link
+    .join("packages")
+    .join("core")
+    .join("cli")
+    .join("lib")
+    .join("cli.js");
+
+  args.push(runtime.to_str().unwrap().to_string());
+
+  args.push(target_entry.to_str().unwrap().to_string());
   args.extend(cmd.command);
 
   let (tx, rx) = tokio::sync::oneshot::channel::<anyhow::Result<()>>();
