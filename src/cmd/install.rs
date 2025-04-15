@@ -18,7 +18,7 @@ pub struct InstallCommand {
   #[arg(short = 'f', long = "force")]
   pub force: bool,
 
-  /// Replace an existing version if already installed
+  /// Forward stdout/stderr for the underlying commands
   #[arg(short = 'v', long = "verbose")]
   pub verbose: bool,
 }

@@ -50,8 +50,6 @@ async fn main() -> anyhow::Result<()> {
   let env = Env::parse()?;
   let config = config::Config::new(&env)?;
 
-  // dbg!(&config);
-
   // Validate session is up
   if config
     .argv
