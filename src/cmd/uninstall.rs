@@ -2,7 +2,7 @@ use std::fs;
 
 use clap::Parser;
 
-use crate::config::Config;
+use crate::{config::Config, platform::name};
 
 #[derive(Debug, Parser)]
 pub struct UninstallCommand {
@@ -14,7 +14,7 @@ pub async fn main(
   config: Config,
   cmd: UninstallCommand,
 ) -> anyhow::Result<()> {
-  let version_safe = urlencoding::encode(&cmd.version).to_string();
+  let version_safe = name::encode(&cmd.version)?;
 
   let target = config.apvm_installs_dir.join(version_safe);
 

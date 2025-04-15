@@ -5,6 +5,7 @@ use crate::ApvmCommand;
 #[allow(unused)]
 #[derive(Debug)]
 pub struct Config {
+  pub argv: Vec<String>,
   pub apvm_dir: PathBuf,
   pub apvm_installs_dir: PathBuf,
   pub apvm_install_dir: PathBuf,
@@ -26,6 +27,7 @@ impl Config {
     let apvm_install_dir = apvm_dir.join("active");
 
     Ok(Self {
+      argv: std::env::args().skip(1).collect::<Vec<String>>(),
       apvm_dir,
       apvm_installs_dir,
       apvm_install_dir,
@@ -35,11 +37,10 @@ impl Config {
 }
 
 fn apvm_dir_default() -> anyhow::Result<PathBuf> {
-  let current_exe = std::env::current_exe()?;
-  let Some(exe_dir) = current_exe.parent() else {
-    return Err(anyhow::anyhow!("{:?} has no directory", current_exe));
+  let Ok(Some(current_exe)) = homedir::my_home() else {
+    return Err(anyhow::anyhow!("Cannot find apvm_home. Please set $APVM_HOME variable manually"))
   };
-  let default_dir = exe_dir.join("apvm_dir");
+  let default_dir = current_exe.join(".local").join("apvm").join("apvm_dir");
   if default_dir.is_file() {
     return Err(anyhow::anyhow!("{:?} exists but is a file", current_exe));
   }

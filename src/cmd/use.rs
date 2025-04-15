@@ -1,8 +1,8 @@
-use std::fs;
+use std::{fs, path::Path};
 
 use clap::Parser;
 
-use crate::config::Config;
+use crate::{config::Config, platform::name};
 
 #[derive(Debug, Parser)]
 pub struct UseCommand {
@@ -14,9 +14,23 @@ pub async fn main(
   config: Config,
   cmd: UseCommand,
 ) -> anyhow::Result<()> {
-  let version_safe = urlencoding::encode(&cmd.version).to_string();
+  let version = cmd.version;
 
-  let mut target = config.apvm_installs_dir.join(&version_safe);
+  if version == "local" {
+    let Some(apvm_local) = config.apvm_local else {
+      return Err(anyhow::anyhow!("$APVM_LOCAL not specified"));
+    };
+    if config.apvm_install_dir.exists() {
+      fs::remove_dir_all(&config.apvm_install_dir)?;
+    }
+    link(&apvm_local, &config.apvm_install_dir)?;
+    println!("Using: local ({})", apvm_local.to_str().unwrap());
+    return Ok(());
+
+  }
+  
+  let version_safe = name::encode(&version)?;
+  let target = config.apvm_installs_dir.join(&version_safe);
 
   if !target.exists() {
     return Err(anyhow::anyhow!("Not installed"));
@@ -25,19 +39,18 @@ pub async fn main(
   if config.apvm_install_dir.exists() {
     fs::remove_dir_all(&config.apvm_install_dir)?;
   }
+  
+  link(&target, &config.apvm_install_dir)?;
+  println!("Using: {}", version);
+  Ok(())
+}
 
-  if version_safe == "local" {
-    let Some(apvm_local) = config.apvm_local else {
-      return Err(anyhow::anyhow!("$APVM_LOCAL not specified"));
-    };
-    target = apvm_local;
-  }
-
+fn link(original: &Path, link: &Path) -> anyhow::Result<()> {
   #[cfg(unix)]
-  std::os::unix::fs::symlink(target, config.apvm_install_dir)?;
-
+  std::os::unix::fs::symlink(original, link)?;
+  
   #[cfg(windows)]
-  std::os::windows::fs::symlink_dir(target, config.apvm_install_dir)?;
-
+  std::os::windows::fs::symlink_dir(original, link)?;
+  
   Ok(())
 }

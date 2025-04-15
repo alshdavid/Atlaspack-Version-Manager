@@ -36,8 +36,8 @@ curl -L https://github.com/alshdavid/atlaspack-version-manager/releases/download
 
 ```bash
 # Install Atlaspack from "main" branch
-apvm install main
-apvm use main
+apvm install git:main
+apvm use git:main
 
 # Run through apvm "atlaspack --version"
 apvm run -- --version 
@@ -55,6 +55,6 @@ mkdir my-project && cd my-project
 npm init -y
 npm install @atlaspack/cli
 
-apvm link main
+apvm link git:main
 apvm link local
 ```

@@ -7,6 +7,7 @@ use tar::Archive;
 use crate::config::Config;
 use crate::platform::exec::ExecOptions;
 use crate::platform::exec::exec;
+use crate::platform::name;
 
 #[derive(Debug, Parser)]
 pub struct InstallCommand {
@@ -26,17 +27,27 @@ pub async fn main(
   config: Config,
   cmd: InstallCommand,
 ) -> anyhow::Result<()> {
+  if cmd.version == "local" {
+    return Err(anyhow::anyhow!("Cannot install local version\n Run:\n\tapvm use local"));
+  } 
+
   // Installs and builds Atlaspack from git
-  install_from_git(config, cmd).await
+  if cmd.version.starts_with("git:") {
+    return install_from_git(config, cmd).await
+  } 
 
   // [TODO] Add super package
+
+  return Err(anyhow::anyhow!("No handler for specifier"));
 }
 
 async fn install_from_git(
   config: Config,
   cmd: InstallCommand,
 ) -> anyhow::Result<()> {
-  let version_safe = urlencoding::encode(&cmd.version).to_string();
+  let version = cmd.version;
+  let version_safe = name::encode(&version)?;
+  let branch = version.replacen("git:", "", 1);
 
   let target_temp = config
     .apvm_installs_dir
@@ -44,33 +55,31 @@ async fn install_from_git(
 
   let target = config.apvm_installs_dir.join(&version_safe);
 
-  if version_safe == "local" {
-    return Err(anyhow::anyhow!("Cannot install local version"));
-  } else if cmd.force || version_safe == "main" && target.exists() {
+  if cmd.force || version == "main" && target.exists() {
     fs::remove_dir_all(&target)?;
   } else if !cmd.force && target.exists() {
     return Err(anyhow::anyhow!("Already installed",));
   }
 
   println!(
-    "Fetching https://github.com/atlassian-labs/atlaspack/archive/{}.tar.gz",
-    &cmd.version,
+    "🚀 Fetching https://github.com/atlassian-labs/atlaspack/archive/{}.tar.gz",
+    &branch,
   );
 
   let response = reqwest::get(format!(
     "https://github.com/atlassian-labs/atlaspack/archive/{}.tar.gz",
-    &cmd.version,
+    &branch,
   ))
   .await?;
 
   if response.status() == 404 {
-    return Err(anyhow::anyhow!("Version '{}' not found", &cmd.version));
+    return Err(anyhow::anyhow!("Version '{}' not found", &version));
   }
 
-  println!("Downloading...");
+  println!("📩 Downloading...");
   let bytes = response.bytes().await?.to_vec();
 
-  println!("Extracting...");
+  println!("📤 Extracting...");
   let tar = GzDecoder::new(bytes.as_slice());
   let mut archive = Archive::new(tar);
 
@@ -88,7 +97,7 @@ async fn install_from_git(
     silent: !cmd.verbose,
   };
 
-  println!("Initializing...");
+  println!("🤖 Initializing...");
   exec(["git", "init"], command_options.clone()).await?;
   exec(["git", "add", "."], command_options.clone()).await?;
   exec(
@@ -97,19 +106,19 @@ async fn install_from_git(
   )
   .await?;
 
-  println!("Installing...");
+  println!("🧶 Installing... (yarn)");
   exec(["yarn", "install"], command_options.clone()).await?;
 
-  println!("Building (Native)...");
+  println!("🔨 Building (Native)...");
   exec(["yarn", "build-native-release"], command_options.clone()).await?;
 
-  println!("Building (Flow)...");
+  println!("🔨 Building (Flow)...");
   exec(["yarn", "build"], command_options.clone()).await?;
 
-  println!("Building (TypeScript)...");
+  println!("🔨 Building (TypeScript)...");
   exec(["yarn", "build-ts"], command_options.clone()).await?;
 
-  println!("Installed");
+  println!("✅ Installed");
 
   Ok(())
 }

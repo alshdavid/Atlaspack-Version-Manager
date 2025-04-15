@@ -42,6 +42,8 @@ async fn main() -> anyhow::Result<()> {
   let args = ApvmCommand::parse();
   let config = config::Config::new(&args)?;
 
+  dbg!(&config);
+  
   match args.command {
     ApvmCommandType::Install(cmd) => cmd::install::main(config, cmd).await,
     ApvmCommandType::Use(cmd) => cmd::r#use::main(config, cmd).await,
