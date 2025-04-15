@@ -43,12 +43,19 @@ pub struct ApvmCommand {
   pub apvm_dir: Option<PathBuf>,
   #[arg(env = "APVM_LOCAL")]
   pub apvm_local: Option<PathBuf>,
+  #[arg(env = "APVM_SOURCES")]
+  pub apvm_sources: Option<bool>,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
   let env = Env::parse()?;
   let config = config::Config::new(&env)?;
+
+  // If the executable is called atlaspack then only proxy
+  if config.exe_stem == "atlaspack" {
+    return cmd::proxy::main(config).await;
+  }
 
   // Validate session is up
   if config

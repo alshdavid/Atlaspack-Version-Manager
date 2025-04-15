@@ -1,41 +1,13 @@
-use std::collections::HashMap;
-
 use crate::config::Config;
-use crate::platform::exec::ExecOptions;
-use crate::platform::exec::exec_blocking;
+use crate::platform::atlaspack::atlaspack_exec;
 
 // Proxy for atlaspack build
 pub async fn main(config: Config) -> anyhow::Result<()> {
-  let target_cli = config
-    .apvm_active_dir
-    .join("packages")
-    .join("core")
-    .join("cli")
-    .join("lib")
-    .join("cli.js");
-  let mut args = vec!["node".to_string(), target_cli.to_str().unwrap().to_string()];
-  args.extend(config.argv.into_iter());
+  if !std::fs::exists(&config.apvm_active_dir)? {
+    return Err(anyhow::anyhow!("No active version installed"));
+  }
 
-  let (tx, rx) = tokio::sync::oneshot::channel::<anyhow::Result<()>>();
-
-  // Run on separate thread to allow instant exit on cnt+c
-  std::thread::spawn(move || {
-    match exec_blocking(
-      &args,
-      ExecOptions {
-        env: Some(HashMap::from_iter(vec![(
-          "APVM_PATH".to_string(),
-          config.apvm_active_dir.to_str().unwrap().to_string(),
-        )])),
-        ..ExecOptions::default()
-      },
-    ) {
-      Ok(_) => tx.send(Ok(())),
-      Err(error) => tx.send(Err(error)),
-    }
-  });
-
-  rx.await??;
-
+  let link = std::fs::read_link(config.apvm_active_dir.join("static"))?;
+  atlaspack_exec(config.argv.clone(), &link, &config).await?;
   Ok(())
 }

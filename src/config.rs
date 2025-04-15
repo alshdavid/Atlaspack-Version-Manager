@@ -9,12 +9,16 @@ use crate::env::Env;
 #[derive(Debug)]
 pub struct Config {
   pub id: String,
+  pub exe_path: PathBuf,
   pub exe: String,
+  pub exe_stem: String,
   pub argv: Vec<String>,
   pub apvm_dir: PathBuf,
   pub apvm_installs_dir: PathBuf,
   pub apvm_active_dir: PathBuf,
   pub apvm_local: Option<PathBuf>,
+  pub apvm_sources: bool,
+  pub apvm_runtime: String,
 }
 
 impl Config {
@@ -34,8 +38,16 @@ impl Config {
     }
 
     let mut argv = std::env::args().collect::<Vec<String>>();
-    let exe = PathBuf::from(argv.remove(0))
-      .file_stem()
+    let arg0 = argv.remove(0);
+    let exe = PathBuf::from(&arg0)
+      .file_name()
+      .unwrap()
+      .to_str()
+      .unwrap()
+      .to_string();
+
+    let exe_stem = PathBuf::from(&arg0)
+      .file_name()
       .unwrap()
       .to_str()
       .unwrap()
@@ -45,13 +57,17 @@ impl Config {
     let apvm_install_dir = cmd.apvm_dir.join("sessions").join(&id);
 
     Ok(Self {
+      exe_path: std::env::current_exe()?,
       id,
       exe,
+      exe_stem,
       argv,
       apvm_dir: cmd.apvm_dir.clone(),
       apvm_installs_dir,
       apvm_active_dir: apvm_install_dir,
       apvm_local: cmd.apvm_local.clone(),
+      apvm_sources: cmd.apvm_sources,
+      apvm_runtime: cmd.apvm_runtime.clone(),
     })
   }
 }

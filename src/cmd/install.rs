@@ -58,6 +58,7 @@ async fn install_from_git(
   let target = config.apvm_installs_dir.join(&version_safe);
 
   if cmd.force || version == "main" && target.exists() {
+    println!("Removing existing");
     fs::remove_dir_all(&target)?;
   } else if !cmd.force && target.exists() {
     return Err(anyhow::anyhow!("Already installed",));
@@ -78,10 +79,10 @@ async fn install_from_git(
     return Err(anyhow::anyhow!("Version '{}' not found", &version));
   }
 
-  println!("Downloading...");
+  println!("Downloading");
   let bytes = response.bytes().await?.to_vec();
 
-  println!("Extracting...");
+  println!("Extracting");
   let tar = GzDecoder::new(bytes.as_slice());
   let mut archive = Archive::new(tar);
 

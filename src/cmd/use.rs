@@ -3,7 +3,8 @@ use std::fs;
 use clap::Parser;
 
 use crate::config::Config;
-use crate::platform::link::link;
+use crate::platform::link::hard_link_or_copy;
+use crate::platform::link::soft_link;
 use crate::platform::name;
 
 #[derive(Debug, Parser)]
@@ -25,7 +26,21 @@ pub async fn main(
     if config.apvm_active_dir.exists() {
       fs::remove_dir_all(&config.apvm_active_dir)?;
     }
-    link(&apvm_local, &config.apvm_active_dir)?;
+
+    let target_static = config.apvm_active_dir.join("static");
+    let target_bin = config.apvm_active_dir.join("bin");
+    let target_lib = config.apvm_active_dir.join("lib");
+
+    fs::create_dir_all(&target_bin)?;
+    fs::create_dir_all(&target_lib)?;
+    soft_link(&apvm_local, &target_static)?;
+
+    #[cfg(unix)]
+    fs::hard_link(config.exe, target_bin.join("atlaspack"))?;
+
+    #[cfg(windows)]
+    fs::hard_link(config.exe, target_bin.join("atlaspack.exe"))?;
+
     println!("Using: local ({})", apvm_local.to_str().unwrap());
     return Ok(());
   }
@@ -40,8 +55,18 @@ pub async fn main(
   if config.apvm_active_dir.exists() {
     fs::remove_dir_all(&config.apvm_active_dir)?;
   }
+  fs::create_dir_all(&config.apvm_active_dir)?;
 
-  link(&target, &config.apvm_active_dir)?;
+  let target_static = config.apvm_active_dir.join("static");
+  let target_bin = config.apvm_active_dir.join("bin");
+  let target_lib = config.apvm_active_dir.join("lib");
+
+  fs::create_dir_all(&target_bin)?;
+  fs::create_dir_all(&target_lib)?;
+
+  hard_link_or_copy(&config.exe_path, &target_bin.join("atlaspack"))?;
+  soft_link(&target, &target_static)?;
+
   println!("Using: {}", version);
   Ok(())
 }

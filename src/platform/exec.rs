@@ -17,7 +17,13 @@ where
   I: IntoIterator<Item = S>,
   S: AsRef<OsStr>,
 {
-  let mut command = tokio::process::Command::new("/usr/bin/env");
+  let mut args = args
+    .into_iter()
+    .map(|v| v.as_ref().to_str().unwrap().to_string())
+    .collect::<Vec<String>>();
+  let arg0 = args.remove(0);
+
+  let mut command = tokio::process::Command::new(arg0);
 
   command.args(args);
 
@@ -53,7 +59,13 @@ where
   I: IntoIterator<Item = S>,
   S: AsRef<OsStr>,
 {
-  let mut command = std::process::Command::new("/usr/bin/env");
+  let mut args = args
+    .into_iter()
+    .map(|v| v.as_ref().to_str().unwrap().to_string())
+    .collect::<Vec<String>>();
+  let arg0 = args.remove(0);
+
+  let mut command = std::process::Command::new(arg0);
 
   command.args(args);
 

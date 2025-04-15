@@ -37,12 +37,12 @@ fn bash(config: Config) -> String {
   let exe_path = env::current_exe().unwrap();
   format!(
     r#"
+export PATH={}/bin:$PATH;
 export APVM_SESSION={};
-export APVM_PATH={};
 trap '{} unload' EXIT;
 "#,
-    config.id,
     config.apvm_active_dir.to_str().unwrap(),
+    config.id,
     exe_path.to_str().unwrap(),
   )
 }

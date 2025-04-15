@@ -3,7 +3,7 @@ use std::fs;
 use clap::Parser;
 
 use crate::config::Config;
-use crate::platform::link::link;
+use crate::platform::link::soft_link;
 use crate::platform::name;
 
 #[derive(Debug, Parser)]
@@ -108,12 +108,17 @@ pub async fn main(
       let Some(package_name) = package_name.strip_prefix("@atlaspack/") else {
         continue;
       };
-      link(&entry_path, &node_modules_atlaspack.join(package_name))?;
+      soft_link(&entry_path, &node_modules_atlaspack.join(package_name))?;
     }
+
+    soft_link(
+      &target_version,
+      &node_modules_atlaspack.join("node_modules"),
+    )?;
   }
 
   println!("✅ Atlaspack Linked ({})", cmd.version);
   println!("      Source {:?}", target_version);
-  println!("          ➜ {:?}", current_dir);
+  println!("           ➜ {:?}", current_dir);
   Ok(())
 }
