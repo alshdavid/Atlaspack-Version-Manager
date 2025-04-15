@@ -1,8 +1,10 @@
-use std::{fs, path::Path};
+use std::fs;
 
 use clap::Parser;
 
-use crate::{config::Config, platform::name};
+use crate::config::Config;
+use crate::platform::link::link;
+use crate::platform::name;
 
 #[derive(Debug, Parser)]
 pub struct UseCommand {
@@ -26,9 +28,8 @@ pub async fn main(
     link(&apvm_local, &config.apvm_active_dir)?;
     println!("Using: local ({})", apvm_local.to_str().unwrap());
     return Ok(());
-
   }
-  
+
   let version_safe = name::encode(&version)?;
   let target = config.apvm_installs_dir.join(&version_safe);
 
@@ -39,18 +40,8 @@ pub async fn main(
   if config.apvm_active_dir.exists() {
     fs::remove_dir_all(&config.apvm_active_dir)?;
   }
-  
+
   link(&target, &config.apvm_active_dir)?;
   println!("Using: {}", version);
-  Ok(())
-}
-
-fn link(original: &Path, link: &Path) -> anyhow::Result<()> {
-  #[cfg(unix)]
-  std::os::unix::fs::symlink(original, link)?;
-  
-  #[cfg(windows)]
-  std::os::windows::fs::symlink_dir(original, link)?;
-  
   Ok(())
 }

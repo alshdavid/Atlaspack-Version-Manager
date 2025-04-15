@@ -2,7 +2,8 @@ use std::fs;
 
 use clap::Parser;
 
-use crate::{config::Config, platform::name};
+use crate::config::Config;
+use crate::platform::name;
 
 #[derive(Debug, Parser)]
 pub struct UninstallCommand {

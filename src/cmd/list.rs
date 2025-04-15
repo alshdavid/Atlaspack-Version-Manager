@@ -2,7 +2,8 @@ use std::fs;
 
 use clap::Parser;
 
-use crate::{config::Config, platform::name};
+use crate::config::Config;
+use crate::platform::name;
 
 #[derive(Debug, Parser)]
 pub struct ListCommand {}
@@ -24,10 +25,10 @@ pub async fn main(
           break 'main;
         }
       }
-      
+
       if let Some(basename) = link.file_name() {
         if let Some(basename) = basename.to_str() {
-          active_name =  name::decode(basename.to_string())?
+          active_name = name::decode(basename)?
         }
       }
     }
@@ -48,7 +49,7 @@ pub async fn main(
     let Some(file_name) = file_name.to_str() else {
       return Err(anyhow::anyhow!("Unable to render version"));
     };
-    let file_name = name::decode(&file_name)?;
+    let file_name = name::decode(file_name)?;
 
     if file_name == active_name {
       println!("  ✅ {}", file_name);

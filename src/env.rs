@@ -13,10 +13,7 @@ impl Env {
         Ok(apvm_dir) => PathBuf::from(apvm_dir),
         Err(_) => apvm_dir_default()?,
       },
-      apvm_session: match std::env::var("APVM_SESSION") {
-        Ok(apvm_local) => Some(apvm_local),
-        Err(_) => None,
-      },
+      apvm_session: std::env::var("APVM_SESSION").ok(),
       apvm_local: match std::env::var("APVM_LOCAL") {
         Ok(apvm_local) => Some(PathBuf::from(apvm_local)),
         Err(_) => None,
@@ -27,7 +24,9 @@ impl Env {
 
 fn apvm_dir_default() -> anyhow::Result<PathBuf> {
   let Ok(Some(current_exe)) = homedir::my_home() else {
-    return Err(anyhow::anyhow!("Cannot find apvm_home. Please set $APVM_HOME variable manually"))
+    return Err(anyhow::anyhow!(
+      "Cannot find apvm_home. Please set $APVM_HOME variable manually"
+    ));
   };
   let default_dir = current_exe.join(".local").join("apvm").join("apvm_dir");
   if default_dir.is_file() {

@@ -5,8 +5,6 @@ use crate::config::Config;
 #[derive(Debug, Parser)]
 pub struct VersionCommand {}
 
-pub async fn main(
-  _config: Config,
-) -> anyhow::Result<()> {
+pub async fn main(_config: Config) -> anyhow::Result<()> {
   Ok(())
 }

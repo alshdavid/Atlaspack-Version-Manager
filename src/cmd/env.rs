@@ -35,13 +35,14 @@ pub async fn main(
 
 fn bash(config: Config) -> String {
   let exe_path = env::current_exe().unwrap();
-  format!(r#"
+  format!(
+    r#"
 export PATH="{}/bin:$PATH";
 export APVM_SESSION={};
 trap '{} unload' EXIT;
 "#,
-  config.apvm_active_dir.to_str().unwrap(),
-  config.id,
-  exe_path.to_str().unwrap(),
-)
+    config.apvm_active_dir.to_str().unwrap(),
+    config.id,
+    exe_path.to_str().unwrap(),
+  )
 }

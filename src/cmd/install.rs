@@ -28,17 +28,19 @@ pub async fn main(
   cmd: InstallCommand,
 ) -> anyhow::Result<()> {
   if cmd.version == "local" {
-    return Err(anyhow::anyhow!("Cannot install local version\n Run:\n\tapvm use local"));
-  } 
+    return Err(anyhow::anyhow!(
+      "Cannot install local version\n Run:\n\tapvm use local"
+    ));
+  }
 
   // Installs and builds Atlaspack from git
   if cmd.version.starts_with("git:") {
-    return install_from_git(config, cmd).await
-  } 
+    return install_from_git(config, cmd).await;
+  }
 
   // [TODO] Add super package
 
-  return Err(anyhow::anyhow!("No handler for specifier"));
+  Err(anyhow::anyhow!("No handler for specifier"))
 }
 
 async fn install_from_git(

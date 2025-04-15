@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
-use rand::{Rng, distr::Alphanumeric};
+use rand::Rng;
+use rand::distr::Alphanumeric;
 
 use crate::env::Env;
 

@@ -1,7 +1,7 @@
 mod cmd;
 mod config;
-mod platform;
 mod env;
+mod platform;
 
 use std::path::PathBuf;
 
@@ -37,7 +37,7 @@ pub struct ApvmCommand {
   pub command: ApvmCommandType,
   #[arg(env = "APVM_DIR")]
   pub apvm_dir: Option<PathBuf>,
-  #[arg( env = "APVM_LOCAL")]
+  #[arg(env = "APVM_LOCAL")]
   pub apvm_local: Option<PathBuf>,
 }
 
@@ -49,12 +49,15 @@ async fn main() -> anyhow::Result<()> {
   // dbg!(&config);
 
   // Validate session is up
-  if config.argv.get(0).is_some_and(|v| v != "env" && env.apvm_session.is_none()) {
-    return Err(anyhow::anyhow!("Run 'apvm env' first"))
+  if config
+    .argv.first()
+    .is_some_and(|v| v != "env" && env.apvm_session.is_none())
+  {
+    return Err(anyhow::anyhow!("Run 'apvm env' first"));
   }
 
   // Commands to proxy
-  match config.argv.get(0).map(|v| v.as_str()) {
+  match config.argv.first().map(|v| v.as_str()) {
     Some("build") => return cmd::build::main(config).await,
     Some("watch") => return cmd::build::main(config).await,
     _ => {}
@@ -63,7 +66,6 @@ async fn main() -> anyhow::Result<()> {
   // APVM Commands
   let args = ApvmCommand::parse();
 
-  
   match args.command {
     ApvmCommandType::Install(cmd) => cmd::install::main(config, cmd).await,
     ApvmCommandType::Use(cmd) => cmd::r#use::main(config, cmd).await,
