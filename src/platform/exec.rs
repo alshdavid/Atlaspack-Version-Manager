@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 
@@ -5,6 +6,7 @@ use std::path::PathBuf;
 pub struct ExecOptions {
   pub cwd: Option<PathBuf>,
   pub silent: bool,
+  pub env: Option<HashMap<String, String>>,
 }
 
 pub async fn exec<I, S>(
@@ -21,6 +23,12 @@ where
 
   if let Some(cwd) = options.cwd {
     command.current_dir(cwd);
+  }
+
+  if let Some(extra_env) = options.env {
+    for (key, val) in extra_env {
+      command.env(key, val);
+    }
   }
 
   if options.silent {
@@ -51,6 +59,12 @@ where
 
   if let Some(cwd) = options.cwd {
     command.current_dir(cwd);
+  }
+
+  if let Some(extra_env) = options.env {
+    for (key, val) in extra_env {
+      command.env(key, val);
+    }
   }
 
   if options.silent {

@@ -1,13 +1,12 @@
-use std::env;
+use std::collections::HashMap;
 use std::fs;
-use std::process::Command;
-use std::process::ExitStatus;
-use std::process::Stdio;
 
 use clap::Parser;
 use clap::ValueEnum;
 
 use crate::config::Config;
+use crate::platform::exec::ExecOptions;
+use crate::platform::exec::exec_blocking;
 
 #[derive(ValueEnum, Debug, Clone)]
 pub enum Runtime {
@@ -64,31 +63,26 @@ pub async fn main(
   );
   args.extend(cmd.command);
 
-  let (tx, rx) = tokio::sync::oneshot::channel::<anyhow::Result<ExitStatus>>();
+  let (tx, rx) = tokio::sync::oneshot::channel::<anyhow::Result<()>>();
 
+  // Run on separate thread to allow instant exit on cnt+c
   std::thread::spawn(move || {
-    let mut command = Command::new(runtime);
-
-    command.args(args);
-    command.current_dir(env::current_dir().unwrap());
-    command.stdout(Stdio::inherit());
-    command.stdin(Stdio::inherit());
-    command.stderr(Stdio::inherit());
-
-    let mut child = match command.spawn() {
-      Ok(child) => child,
-      Err(error) => return tx.send(Err(anyhow::Error::from(error))),
-    };
-
-    let exit_status = match child.wait() {
-      Ok(exit_status) => exit_status,
-      Err(error) => return tx.send(Err(anyhow::Error::from(error))),
-    };
-
-    tx.send(Ok(exit_status))
+    match exec_blocking(
+      &args,
+      ExecOptions {
+        env: Some(HashMap::from_iter(vec![(
+          "APVM_PATH".to_string(),
+          config.apvm_active_dir.to_str().unwrap().to_string(),
+        )])),
+        ..ExecOptions::default()
+      },
+    ) {
+      Ok(_) => tx.send(Ok(())),
+      Err(error) => tx.send(Err(error)),
+    }
   });
 
-  let _exit_status = rx.await??;
+  rx.await??;
 
   Ok(())
 }

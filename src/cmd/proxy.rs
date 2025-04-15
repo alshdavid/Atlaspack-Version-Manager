@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::config::Config;
 use crate::platform::exec::ExecOptions;
 use crate::platform::exec::exec_blocking;
@@ -17,9 +19,20 @@ pub async fn main(config: Config) -> anyhow::Result<()> {
   let (tx, rx) = tokio::sync::oneshot::channel::<anyhow::Result<()>>();
 
   // Run on separate thread to allow instant exit on cnt+c
-  std::thread::spawn(move || match exec_blocking(&args, ExecOptions::default()) {
-    Ok(_) => tx.send(Ok(())),
-    Err(error) => tx.send(Err(error)),
+  std::thread::spawn(move || {
+    match exec_blocking(
+      &args,
+      ExecOptions {
+        env: Some(HashMap::from_iter(vec![(
+          "APVM_PATH".to_string(),
+          config.apvm_active_dir.to_str().unwrap().to_string(),
+        )])),
+        ..ExecOptions::default()
+      },
+    ) {
+      Ok(_) => tx.send(Ok(())),
+      Err(error) => tx.send(Err(error)),
+    }
   });
 
   rx.await??;

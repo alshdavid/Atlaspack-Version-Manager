@@ -35,16 +35,17 @@ curl -L https://github.com/alshdavid/atlaspack-version-manager/releases/download
 ## Usage
 
 ```bash
+# Run this before the CLI will work
+eval "$(./apvm env -s bash)"
+
 # Install Atlaspack from "main" branch
 apvm install git:main
 apvm use git:main
 
 # Run through apvm "atlaspack --version"
 apvm run -- --version 
-
-# Automatically add to PATH
-eval "$(./apvm env -s bash)"
-atlaspack --version
+apvm build
+apvm watch
 
 # Use your local Atlaspack sources
 export APVM_LOCAL="$HOME/development/atlasian-labs/atlaspack"

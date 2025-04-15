@@ -97,6 +97,7 @@ async fn install_from_git(
   let command_options = ExecOptions {
     cwd: Some(target),
     silent: !cmd.verbose,
+    ..Default::default()
   };
 
   println!("🤖 Initializing...");
