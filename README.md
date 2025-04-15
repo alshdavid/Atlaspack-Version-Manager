@@ -42,8 +42,10 @@ eval "$(./apvm env -s bash)"
 apvm install git:main
 apvm use git:main
 
-# Run through apvm "atlaspack --version"
+# Proxy commands to active atlaspack
 apvm run -- --version 
+
+# Proxy common commands on the top level to active atlaspack 
 apvm build
 apvm watch
 
