@@ -4,6 +4,7 @@ use clap::Parser;
 
 use crate::config::Config;
 use crate::platform::name;
+use crate::platform::colors::*;
 
 #[derive(Debug, Parser)]
 pub struct ListCommand {}
@@ -12,13 +13,11 @@ pub async fn main(
   config: Config,
   _cmd: ListCommand,
 ) -> anyhow::Result<()> {
-  println!("Atlaspack Versions Installed:");
-
   let mut active_name = String::default();
+
   if fs::exists(&config.apvm_active_dir)? {
     'main: {
-      let link = fs::read_link(&config.apvm_active_dir)?;
-
+      let link = fs::read_link(config.apvm_active_dir.join("static"))?;
       if let Some(apvm_local) = &config.apvm_local {
         if link == *apvm_local {
           active_name = apvm_local.to_str().unwrap().to_string();
@@ -37,9 +36,9 @@ pub async fn main(
   if let Some(apvm_local) = config.apvm_local {
     let apvm_local = apvm_local.to_str().unwrap().to_string();
     if apvm_local == active_name {
-      println!("✅ local 🍝 ({})", apvm_local);
+      println!("{}* local ({}){}", color_blue, apvm_local, color_reset);
     } else {
-      println!("⏸️ local 🍝 ({})", apvm_local);
+      println!("* local ({})", apvm_local);
     }
   }
 
@@ -52,9 +51,9 @@ pub async fn main(
     let file_name = name::decode(file_name)?;
 
     if file_name == active_name {
-      println!("✅ {}", file_name);
+      println!("{}{}* {}{}{}", color_blue, style_bold, file_name, color_reset, style_reset);
     } else {
-      println!("⏸️ {}", file_name);
+      println!("⏸* {}", file_name);
     }
   }
   Ok(())

@@ -68,7 +68,7 @@ pub async fn main(
       }
     } else {
       let target_version_name = name::encode(&cmd.version)?;
-      config.apvm_installs_dir.join(target_version_name)
+      config.apvm_installs_dir.join(target_version_name).join("static")
     }
   };
 
