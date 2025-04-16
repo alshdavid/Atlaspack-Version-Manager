@@ -5,7 +5,7 @@ pub struct Env {
   pub apvm_runtime: String,
   pub apvm_dir: PathBuf,
   pub apvm_local: Option<PathBuf>,
-  pub apvm_sources: bool,
+  pub apvm_use_sources: bool,
 }
 
 impl Env {
@@ -24,8 +24,8 @@ impl Env {
         Ok(apvm_local) => Some(PathBuf::from(apvm_local)),
         Err(_) => None,
       },
-      apvm_sources: match std::env::var("APVM_SOURCES") {
-        Ok(apvm_sources) => apvm_sources == "true",
+      apvm_use_sources: match std::env::var("APVM_USE_SOURCES") {
+        Ok(apvm_use_sources) => apvm_use_sources == "true",
         Err(_) => false,
       },
     })

@@ -16,7 +16,7 @@ pub async fn atlaspack_exec(
 
   let cli_dir = source_dir.join("packages").join("core").join("cli");
 
-  let target_entry = if config.apvm_sources {
+  let target_entry = if config.apvm_use_sources {
     println!("Using Atlaspack sources");
     cli_dir.join("src").join("cli.js")
   } else {
@@ -51,5 +51,3 @@ pub async fn atlaspack_exec(
   rx.await??;
   Ok(())
 }
-
-// pub async fn atlaspack_exec_blocking() {}

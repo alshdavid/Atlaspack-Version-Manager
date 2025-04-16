@@ -17,7 +17,7 @@ pub struct Config {
   pub apvm_installs_dir: PathBuf,
   pub apvm_active_dir: PathBuf,
   pub apvm_local: Option<PathBuf>,
-  pub apvm_sources: bool,
+  pub apvm_use_sources: bool,
   pub apvm_runtime: String,
 }
 
@@ -66,7 +66,7 @@ impl Config {
       apvm_installs_dir,
       apvm_active_dir: apvm_install_dir,
       apvm_local: cmd.apvm_local.clone(),
-      apvm_sources: cmd.apvm_sources,
+      apvm_use_sources: cmd.apvm_use_sources,
       apvm_runtime: cmd.apvm_runtime.clone(),
     })
   }

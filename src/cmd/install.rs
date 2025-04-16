@@ -6,7 +6,7 @@ use tar::Archive;
 
 use crate::config::Config;
 use crate::platform::exec::ExecOptions;
-use crate::platform::exec::exec;
+use crate::platform::exec::exec_blocking;
 use crate::platform::name;
 
 #[derive(Debug, Parser)]
@@ -102,25 +102,24 @@ async fn install_from_git(
   };
 
   println!("Initializing");
-  exec(["git", "init"], command_options.clone()).await?;
-  exec(["git", "add", "."], command_options.clone()).await?;
-  exec(
+  exec_blocking(["git", "init"], command_options.clone())?;
+  exec_blocking(["git", "add", "."], command_options.clone())?;
+  exec_blocking(
     ["git", "commit", "-m", "Initial Commit"],
     command_options.clone(),
-  )
-  .await?;
+  )?;
 
   println!("Installing (yarn)");
-  exec(["yarn", "install"], command_options.clone()).await?;
+  exec_blocking(["yarn", "install"], command_options.clone())?;
 
   println!("Building (Native)");
-  exec(["yarn", "build-native-release"], command_options.clone()).await?;
+  exec_blocking(["yarn", "build-native-release"], command_options.clone())?;
 
   println!("Building (Flow)");
-  exec(["yarn", "build"], command_options.clone()).await?;
+  exec_blocking(["yarn", "build"], command_options.clone())?;
 
   println!("Building (TypeScript)");
-  exec(["yarn", "build-ts"], command_options.clone()).await?;
+  exec_blocking(["yarn", "build-ts"], command_options.clone())?;
 
   println!("✅ Installed");
 
