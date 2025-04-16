@@ -1,5 +1,7 @@
 [package]
 name = "apvm"
+description = "Atlaspack Version Manager"
+repository = "https://github.com/alshdavid/atlaspack-version-manager"
 version = "0.1.0"
 edition = "2024"
 
@@ -17,6 +19,7 @@ rpath = false
 anyhow = "1.0.98"
 base64 = "0.22.1"
 clap = { version = "4.5.36", features = ["derive", "env"] }
+colored = "3.0.0"
 flate2 = "1.1.1"
 homedir = "0.3.4"
 json = "0.12.4"
