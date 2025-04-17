@@ -15,13 +15,7 @@ pub async fn atlaspack_exec(
   let apvm_path = config.apvm_active_dir.to_str().unwrap().to_string();
 
   let cli_dir = source_dir.join("packages").join("core").join("cli");
-
-  let target_entry = if config.apvm_use_sources {
-    println!("Using Atlaspack sources");
-    cli_dir.join("src").join("cli.js")
-  } else {
-    cli_dir.join("lib").join("cli.js")
-  };
+  let target_entry = cli_dir.join("lib").join("cli.js");
 
   let mut args = Vec::<String>::new();
 

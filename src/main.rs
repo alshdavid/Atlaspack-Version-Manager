@@ -41,10 +41,6 @@ pub struct ApvmCommand {
   pub command: ApvmCommandType,
   #[arg(env = "APVM_DIR")]
   pub apvm_dir: Option<PathBuf>,
-  #[arg(env = "APVM_LOCAL")]
-  pub apvm_local: Option<PathBuf>,
-  #[arg(env = "APVM_USE_SOURCES")]
-  pub apvm_use_sources: Option<bool>,
 }
 
 #[tokio::main]

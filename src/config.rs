@@ -14,10 +14,9 @@ pub struct Config {
   pub exe_stem: String,
   pub argv: Vec<String>,
   pub apvm_dir: PathBuf,
+  pub apvm_dir_temp: PathBuf,
   pub apvm_installs_dir: PathBuf,
   pub apvm_active_dir: PathBuf,
-  pub apvm_local: Option<PathBuf>,
-  pub apvm_use_sources: bool,
   pub apvm_runtime: String,
 }
 
@@ -63,10 +62,9 @@ impl Config {
       exe_stem,
       argv,
       apvm_dir: cmd.apvm_dir.clone(),
+      apvm_dir_temp: cmd.apvm_dir.join(".temp"),
       apvm_installs_dir,
       apvm_active_dir: apvm_install_dir,
-      apvm_local: cmd.apvm_local.clone(),
-      apvm_use_sources: cmd.apvm_use_sources,
       apvm_runtime: cmd.apvm_runtime.clone(),
     })
   }

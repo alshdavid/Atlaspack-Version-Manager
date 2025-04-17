@@ -38,10 +38,12 @@ fn bash(config: Config) -> String {
   format!(
     r#"
 export PATH={}/bin:$PATH;
+export APVM_DIR={};
 export APVM_SESSION={};
 trap '{} unload' EXIT;
 "#,
     config.apvm_active_dir.to_str().unwrap(),
+    config.apvm_dir.to_str().unwrap(),
     config.id,
     exe_path.to_str().unwrap(),
   )

@@ -1,22 +1,30 @@
 use std::fs;
 
 use clap::Parser;
-use flate2::read::GzDecoder;
-use tar::Archive;
 
+use super::install_git::install_from_git;
+use super::install_local::install_from_local;
 use crate::config::Config;
-use crate::platform::exec::ExecOptions;
-use crate::platform::exec::exec_blocking;
-use crate::platform::name;
+use crate::platform::origin::InstallOrigin;
 
 #[derive(Debug, Parser)]
 pub struct InstallCommand {
   /// Target version to install
   pub version: String,
 
+  #[arg(short = 'o', long = "origin", default_value = "git")]
+  pub origin: InstallOrigin,
+
+  #[arg(short = 'a', long = "alias")]
+  pub alias: Option<String>,
+
   /// Replace an existing version if already installed
   #[arg(short = 'f', long = "force")]
   pub force: bool,
+
+  /// Skips any build steps
+  #[arg(long = "skip-build")]
+  pub skip_build: bool,
 
   /// Forward stdout/stderr for the underlying commands
   #[arg(short = 'v', long = "verbose")]
@@ -27,101 +35,15 @@ pub async fn main(
   config: Config,
   cmd: InstallCommand,
 ) -> anyhow::Result<()> {
-  if cmd.version == "local" {
-    return Err(anyhow::anyhow!(
-      "Cannot install local version\n Run:\n\tapvm use local"
-    ));
+  fs::create_dir_all(&config.apvm_installs_dir)?;
+  fs::create_dir_all(&config.apvm_dir_temp)?;
+  fs::create_dir_all(config.apvm_installs_dir.join("git"))?;
+  fs::create_dir_all(config.apvm_installs_dir.join("local"))?;
+  fs::create_dir_all(config.apvm_installs_dir.join("super"))?;
+
+  match cmd.origin {
+    InstallOrigin::Git => install_from_git(config, cmd).await,
+    InstallOrigin::Local => install_from_local(config, cmd).await,
+    InstallOrigin::Super => todo!(),
   }
-
-  // Installs and builds Atlaspack from git
-  if cmd.version.starts_with("git:") {
-    return install_from_git(config, cmd).await;
-  }
-
-  // [TODO] Add super package
-
-  Err(anyhow::anyhow!("No handler for specifier"))
-}
-
-async fn install_from_git(
-  config: Config,
-  cmd: InstallCommand,
-) -> anyhow::Result<()> {
-  let version = cmd.version;
-  let version_safe = name::encode(&version)?;
-  let branch = version.replacen("git:", "", 1);
-
-  let target_temp = config
-    .apvm_installs_dir
-    .join(format!("{}.temp", version_safe));
-
-  let target = config.apvm_installs_dir.join(&version_safe);
-
-  if cmd.force || version == "main" && target.exists() {
-    println!("Removing existing");
-    fs::remove_dir_all(&target)?;
-  } else if !cmd.force && target.exists() {
-    return Err(anyhow::anyhow!("Already installed",));
-  }
-
-  println!(
-    "🚀 Fetching https://github.com/atlassian-labs/atlaspack/archive/{}.tar.gz",
-    &branch,
-  );
-
-  let response = reqwest::get(format!(
-    "https://github.com/atlassian-labs/atlaspack/archive/{}.tar.gz",
-    &branch,
-  ))
-  .await?;
-
-  if response.status() == 404 {
-    return Err(anyhow::anyhow!("Version '{}' not found", &version));
-  }
-
-  println!("Downloading");
-  let bytes = response.bytes().await?.to_vec();
-
-  println!("Extracting");
-  let tar = GzDecoder::new(bytes.as_slice());
-  let mut archive = Archive::new(tar);
-
-  archive.unpack(&target_temp)?;
-
-  let Some(Ok(inner)) = fs::read_dir(&target_temp)?.next() else {
-    return Err(anyhow::anyhow!("Unable to find inner package"));
-  };
-
-  fs::rename(inner.path(), &target)?;
-  fs::remove_dir_all(&target_temp)?;
-
-  let command_options = ExecOptions {
-    cwd: Some(target),
-    silent: !cmd.verbose,
-    ..Default::default()
-  };
-
-  println!("Initializing");
-  exec_blocking(["git", "init"], command_options.clone())?;
-  exec_blocking(["git", "add", "."], command_options.clone())?;
-  exec_blocking(
-    ["git", "commit", "-m", "Initial Commit"],
-    command_options.clone(),
-  )?;
-
-  println!("Installing (yarn)");
-  exec_blocking(["yarn", "install"], command_options.clone())?;
-
-  println!("Building (Native)");
-  exec_blocking(["yarn", "build-native-release"], command_options.clone())?;
-
-  println!("Building (Flow)");
-  exec_blocking(["yarn", "build"], command_options.clone())?;
-
-  println!("Building (TypeScript)");
-  exec_blocking(["yarn", "build-ts"], command_options.clone())?;
-
-  println!("✅ Installed");
-
-  Ok(())
 }

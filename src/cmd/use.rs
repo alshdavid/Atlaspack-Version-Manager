@@ -3,70 +3,89 @@ use std::fs;
 use clap::Parser;
 
 use crate::config::Config;
-use crate::platform::link::hard_link_or_copy;
-use crate::platform::link::soft_link;
+use crate::platform::link;
 use crate::platform::name;
+use crate::platform::origin::InstallOrigin;
+use crate::platform::path_ext::PathExt;
 
 #[derive(Debug, Parser)]
 pub struct UseCommand {
   /// Target version to use
-  pub version: String,
+  pub version: Option<String>,
+
+  #[arg(short = 'o', long = "origin", default_value = "git")]
+  pub origin: Option<InstallOrigin>,
 }
 
 pub async fn main(
   config: Config,
   cmd: UseCommand,
 ) -> anyhow::Result<()> {
-  let version = cmd.version;
-
-  if version == "local" {
-    let Some(apvm_local) = config.apvm_local else {
-      return Err(anyhow::anyhow!("$APVM_LOCAL not specified"));
-    };
-    if config.apvm_active_dir.exists() {
-      fs::remove_dir_all(&config.apvm_active_dir)?;
-    }
-
-    let target_static = config.apvm_active_dir.join("static");
-    let target_bin = config.apvm_active_dir.join("bin");
-    let target_lib = config.apvm_active_dir.join("lib");
-
-    fs::create_dir_all(&target_bin)?;
-    fs::create_dir_all(&target_lib)?;
-    soft_link(&apvm_local, &target_static)?;
-
-    #[cfg(unix)]
-    fs::hard_link(config.exe, target_bin.join("atlaspack"))?;
-
-    #[cfg(windows)]
-    fs::hard_link(config.exe, target_bin.join("atlaspack.exe"))?;
-
-    println!("Using: local ({})", apvm_local.to_str().unwrap());
-    return Ok(());
+  match cmd.origin {
+    Some(InstallOrigin::Super) => todo!(),
+    Some(InstallOrigin::Git) => use_git(config, cmd).await,
+    Some(InstallOrigin::Local) => use_local(config, cmd).await,
+    None => todo!(),
   }
+}
 
+async fn use_git(
+  config: Config,
+  cmd: UseCommand,
+) -> anyhow::Result<()> {
+  let version = cmd.version.unwrap_or("main".to_string());
   let version_safe = name::encode(&version)?;
-  let target = config.apvm_installs_dir.join(&version_safe);
 
-  if !target.exists() {
-    return Err(anyhow::anyhow!("Not installed"));
-  }
-
-  if config.apvm_active_dir.exists() {
-    fs::remove_dir_all(&config.apvm_active_dir)?;
-  }
-  fs::create_dir_all(&config.apvm_active_dir)?;
+  let installs_dir = config.apvm_installs_dir.join("git");
+  let target_dir = installs_dir.join(&version_safe);
 
   let target_static = config.apvm_active_dir.join("static");
   let target_bin = config.apvm_active_dir.join("bin");
-  let target_lib = config.apvm_active_dir.join("lib");
 
+  if !fs::exists(&target_dir)? {
+    return Err(anyhow::anyhow!("Version not installed"));
+  }
+
+  if fs::exists(&config.apvm_active_dir)? {
+    fs::remove_dir_all(&config.apvm_active_dir)?;
+  }
+  fs::create_dir_all(&config.apvm_active_dir)?;
   fs::create_dir_all(&target_bin)?;
-  fs::create_dir_all(&target_lib)?;
 
-  hard_link_or_copy(&config.exe_path, &target_bin.join("atlaspack"))?;
-  soft_link(&target, &target_static)?;
+  link::hard_link_or_copy(&config.exe_path, &target_bin.join("atlaspack"))?;
+  link::soft_link(&target_dir, &target_static)?;
 
-  println!("Using: {}", version);
+  println!("Using: {} (git)", version);
+  Ok(())
+}
+
+async fn use_local(
+  config: Config,
+  cmd: UseCommand,
+) -> anyhow::Result<()> {
+  let version = cmd.version.unwrap_or("local".to_string());
+  let version_safe = name::encode(&version)?;
+
+  let installs_dir = config.apvm_installs_dir.join("local");
+  let target_dir = installs_dir.join(&version_safe);
+  let link_src = fs::read_link(&target_dir)?;
+
+  let target_static = config.apvm_active_dir.join("static");
+  let target_bin = config.apvm_active_dir.join("bin");
+
+  if !fs::exists(&target_dir)? {
+    return Err(anyhow::anyhow!("Version not installed"));
+  }
+
+  if fs::exists(&config.apvm_active_dir)? {
+    fs::remove_dir_all(&config.apvm_active_dir)?;
+  }
+  fs::create_dir_all(&config.apvm_active_dir)?;
+  fs::create_dir_all(&target_bin)?;
+
+  link::hard_link_or_copy(&config.exe_path, &target_bin.join("atlaspack"))?;
+  link::soft_link(&target_dir, &target_static)?;
+
+  println!("Using: {} ({})", version, link_src.try_to_string()?);
   Ok(())
 }

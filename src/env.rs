@@ -4,8 +4,6 @@ pub struct Env {
   pub apvm_session: Option<String>,
   pub apvm_runtime: String,
   pub apvm_dir: PathBuf,
-  pub apvm_local: Option<PathBuf>,
-  pub apvm_use_sources: bool,
 }
 
 impl Env {
@@ -20,14 +18,6 @@ impl Env {
         Err(_) => "node".to_string(),
       },
       apvm_session: std::env::var("APVM_SESSION").ok(),
-      apvm_local: match std::env::var("APVM_LOCAL") {
-        Ok(apvm_local) => Some(PathBuf::from(apvm_local)),
-        Err(_) => None,
-      },
-      apvm_use_sources: match std::env::var("APVM_USE_SOURCES") {
-        Ok(apvm_use_sources) => apvm_use_sources == "true",
-        Err(_) => false,
-      },
     })
   }
 }

@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use std::path::Path;
 
 pub fn soft_link(
