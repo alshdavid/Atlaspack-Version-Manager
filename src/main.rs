@@ -49,7 +49,7 @@ async fn main() -> anyhow::Result<()> {
   let config = config::Config::new(&env)?;
 
   // If the executable is called atlaspack then only proxy
-  if config.exe_stem == "atlaspack" {
+  if &config.exe_stem == "atlaspack" {
     return cmd::proxy::main(config).await;
   }
 

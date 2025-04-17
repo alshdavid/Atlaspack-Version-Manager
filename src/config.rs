@@ -4,13 +4,12 @@ use rand::Rng;
 use rand::distr::Alphanumeric;
 
 use crate::env::Env;
+use crate::platform::path_ext::*;
 
-#[allow(unused)]
 #[derive(Debug)]
 pub struct Config {
   pub id: String,
   pub exe_path: PathBuf,
-  pub exe: String,
   pub exe_stem: String,
   pub argv: Vec<String>,
   pub apvm_dir: PathBuf,
@@ -37,28 +36,17 @@ impl Config {
     }
 
     let mut argv = std::env::args().collect::<Vec<String>>();
-    let arg0 = argv.remove(0);
-    let exe = PathBuf::from(&arg0)
-      .file_name()
-      .unwrap()
-      .to_str()
-      .unwrap()
-      .to_string();
+    argv.remove(0);
 
-    let exe_stem = PathBuf::from(&arg0)
-      .file_name()
-      .unwrap()
-      .to_str()
-      .unwrap()
-      .to_string();
+    let exe_path = std::env::current_exe()?;
+    let exe_stem = exe_path.try_file_stem()?;
 
     std::fs::create_dir_all(cmd.apvm_dir.join("sessions"))?;
     let apvm_install_dir = cmd.apvm_dir.join("sessions").join(&id);
 
     Ok(Self {
-      exe_path: std::env::current_exe()?,
       id,
-      exe,
+      exe_path,
       exe_stem,
       argv,
       apvm_dir: cmd.apvm_dir.clone(),

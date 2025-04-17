@@ -30,6 +30,7 @@ impl OsStringExt for &OsStr {
 pub trait PathExt {
   fn try_parent(&self) -> anyhow::Result<&Path>;
   fn try_file_name(&self) -> anyhow::Result<String>;
+  fn try_file_stem(&self) -> anyhow::Result<String>;
   fn try_to_string(&self) -> anyhow::Result<String>;
 }
 
@@ -45,6 +46,13 @@ impl PathExt for PathBuf {
     match self.file_name() {
       Some(v) => Ok(v.try_to_string()?),
       None => Err(anyhow::anyhow!("Cannot get file name")),
+    }
+  }
+
+  fn try_file_stem(&self) -> anyhow::Result<String> {
+    match self.file_stem() {
+      Some(v) => Ok(v.try_to_string()?),
+      None => Err(anyhow::anyhow!("Cannot get file stem")),
     }
   }
 
@@ -68,6 +76,13 @@ impl PathExt for Path {
     match self.file_name() {
       Some(v) => Ok(v.try_to_string()?),
       None => Err(anyhow::anyhow!("Cannot get file name")),
+    }
+  }
+
+  fn try_file_stem(&self) -> anyhow::Result<String> {
+    match self.file_stem() {
+      Some(v) => Ok(v.try_to_string()?),
+      None => Err(anyhow::anyhow!("Cannot get file stem")),
     }
   }
 

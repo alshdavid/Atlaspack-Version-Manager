@@ -2,6 +2,8 @@ use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 
+use crate::platform::path_ext::*;
+
 #[derive(Debug, Default, Clone)]
 pub struct ExecOptions {
   pub cwd: Option<PathBuf>,
@@ -19,7 +21,7 @@ where
 {
   let mut args = args
     .into_iter()
-    .map(|v| v.as_ref().to_str().unwrap().to_string())
+    .map(|v| v.as_ref().try_to_string().expect("Unable to parse args"))
     .collect::<Vec<String>>();
   let arg0 = args.remove(0);
 
