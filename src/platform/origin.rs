@@ -7,6 +7,15 @@ pub enum InstallOrigin {
   Local,
 }
 
+impl std::fmt::Display for InstallOrigin {
+  fn fmt(
+    &self,
+    f: &mut std::fmt::Formatter<'_>,
+  ) -> std::fmt::Result {
+    write!(f, "{}", self.to_string())
+  }
+}
+
 impl TryFrom<&str> for InstallOrigin {
   type Error = anyhow::Error;
 
@@ -25,5 +34,16 @@ impl TryFrom<String> for InstallOrigin {
 
   fn try_from(value: String) -> Result<Self, Self::Error> {
     Self::try_from(value.as_str())
+  }
+}
+
+impl Into<String> for InstallOrigin {
+  fn into(self) -> String {
+    match self {
+      InstallOrigin::Super => "super",
+      InstallOrigin::Git => "git",
+      InstallOrigin::Local => "local",
+    }
+    .to_string()
   }
 }

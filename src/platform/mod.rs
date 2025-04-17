@@ -1,4 +1,6 @@
+pub mod active;
 pub mod atlaspack;
+pub mod atlaspack_packages;
 pub mod colors;
 pub mod exec;
 pub mod link;

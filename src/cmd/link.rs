@@ -1,46 +1,87 @@
+use std::fs;
+
 use clap::Parser;
 
-use crate::config::Config;
+use crate::{config::Config, platform::atlaspack_packages::KNOWN_PACKAGES};
 
 #[derive(Debug, Parser)]
 pub struct LinkCommand {
-  /// What version to link
-  pub version: String,
 }
 
-/*
-  /node_modules
-    /.apvm
-      /active -> $(apvm list --only-active)
-      /old
-        /.bin
-          atlaspack
-        /@atlaspack
-          ...
-    /.bin
-      /atlaspack -> ../.apvm/atlaspack
-    /@atlaspack
-      ... -> ../.apvm/active/...
-*/
-
 pub async fn main(
-  _config: Config,
+  config: Config,
   _cmd: LinkCommand,
 ) -> anyhow::Result<()> {
-  // let current_dir = std::env::current_dir()?;
-  // let node_modules = current_dir.join("node_modules");
-  // let node_modules_bin = node_modules.join(".bin");
-  // let node_modules_apvm = node_modules.join(".apvm");
+  let node_modules = config.pwd.join("node_modules");
+  let node_modules_bin = node_modules.join(".bin");
+  let node_modules_atlaspack = node_modules.join("@atlaspack");
+
+  if !fs::exists(&node_modules)? {
+    fs::create_dir_all(&node_modules)?;
+    fs::create_dir_all(&node_modules_bin)?;
+    fs::create_dir_all(&node_modules_atlaspack)?;
+  }
+
+  for (name, inner_main) in KNOWN_PACKAGES {
+    let package_path = node_modules_atlaspack.join(name);
+    let package_json_path = package_path.join("package.json");
+    
+    let package_json_bytes = if fs::exists(&package_json_path)? {
+      fs::read_to_string(&package_json_path)?
+    } else {
+      format!(r#"{{ "name": "{}", "main": "./apvm.cjs" }}"#, name).to_string()
+    };
+
+    let json::JsonValue::Object(package_json) = json::parse(&package_json_bytes)? else {
+      continue;
+    };
+
+    let Some(package_name) = package_json.get("main") else {
+      continue;
+    };
+
+    let package_main = match package_name {
+      json::JsonValue::Short(package_main) => package_main.to_string(),
+      json::JsonValue::String(package_main) => package_main.clone(),
+      _ => continue,
+    };
+
+    if package_main == "./apvm.cjs" {
+      // continue
+    }
+
+    
+
+//     let entry_code = format!(r#"
+// if (process.env.APVM_PATH) {{
+//   module.exports = require("{}/{}")
+// }} else {{
+//   module.exports = require("{}")
+// }}
+//     "#, package_main, package_main);
+//     println!("{}", package_main)
+  }
+
+
+  Ok(())
+}
+
+
+
+
+
+
+/*
+// let node_modules_apvm = node_modules.join(".apvm");
   // let node_modules_apvm_old = node_modules_apvm.join("old");
   // let node_modules_apvm_old_atlaspack = node_modules_apvm_old.join("@atlaspack");
   // let node_modules_apvm_old_bin = node_modules_apvm_old.join(".bin");
-  // let node_modules_atlaspack = node_modules.join("@atlaspack");
 
-  // if !fs::exists(&node_modules)? {
-  //   fs::create_dir_all(&node_modules)?;
-  //   fs::create_dir_all(&node_modules_bin)?;
-  //   fs::create_dir_all(&node_modules_atlaspack)?;
-  // }
+  if !fs::exists(&node_modules)? {
+    fs::create_dir_all(&node_modules)?;
+    fs::create_dir_all(&node_modules_bin)?;
+    fs::create_dir_all(&node_modules_atlaspack)?;
+  }
 
   // if fs::exists(&node_modules_apvm)? {
   //   return Err(anyhow::anyhow!("Project is already linked"));
@@ -116,5 +157,5 @@ pub async fn main(
   // println!("✅ Atlaspack Linked ({})", cmd.version);
   // println!("      Source {:?}", target_version);
   // println!("           ➜ {:?}", current_dir);
-  Ok(())
-}
+
+*/

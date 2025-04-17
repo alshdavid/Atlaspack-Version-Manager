@@ -27,6 +27,6 @@ impl Deref for TempDir {
 
 impl Drop for TempDir {
   fn drop(&mut self) {
-    fs::remove_dir_all(&self.0).unwrap();
+    fs::remove_dir_all(&self.0).ok();
   }
 }

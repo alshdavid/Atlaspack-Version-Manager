@@ -1,9 +1,9 @@
 use std::fs;
-use std::path::PathBuf;
 
 use clap::Parser;
 
 use crate::config::Config;
+use crate::platform::active::ActivePackage;
 use crate::platform::colors::*;
 use crate::platform::name;
 use crate::platform::origin::InstallOrigin;
@@ -16,7 +16,7 @@ pub async fn main(
   config: Config,
   _cmd: ListCommand,
 ) -> anyhow::Result<()> {
-  let active = Active::new(&config)?;
+  let active = ActivePackage::new(&config)?;
 
   for entry in fs::read_dir(config.apvm_installs_dir.join("local"))? {
     let entry = entry?;
@@ -68,32 +68,5 @@ fn print_name(
     );
   } else {
     println!("* {} {}", name, suffix);
-  }
-}
-
-#[allow(unused)]
-struct Active {
-  kind: InstallOrigin,
-  name_encoded: String,
-  name: String,
-  path: PathBuf,
-}
-
-impl Active {
-  fn new(config: &Config) -> anyhow::Result<Option<Self>> {
-    let target_path = config.apvm_active_dir.join("static");
-    if !fs::exists(&target_path)? {
-      return Ok(None);
-    }
-    let link = fs::read_link(config.apvm_active_dir.join("static"))?;
-    let link_name_encoded = link.try_file_name()?;
-    let link_name = name::decode(&link_name_encoded)?;
-    let link_kind = link.try_parent()?.try_file_name()?;
-    Ok(Some(Self {
-      kind: InstallOrigin::try_from(link_kind)?,
-      name_encoded: link_name_encoded,
-      name: link_name,
-      path: link,
-    }))
   }
 }

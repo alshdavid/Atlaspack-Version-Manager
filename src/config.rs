@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
-use rand::Rng;
 use rand::distr::Alphanumeric;
+use rand::Rng;
 
 use crate::env::Env;
 use crate::platform::path_ext::*;
@@ -9,6 +9,7 @@ use crate::platform::path_ext::*;
 #[derive(Debug)]
 pub struct Config {
   pub id: String,
+  pub pwd: PathBuf,
   pub exe_path: PathBuf,
   pub exe_stem: String,
   pub argv: Vec<String>,
@@ -46,6 +47,7 @@ impl Config {
 
     Ok(Self {
       id,
+      pwd: std::env::current_dir()?,
       exe_path,
       exe_stem,
       argv,

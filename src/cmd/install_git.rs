@@ -21,7 +21,7 @@ pub async fn install_from_git(
 
   let target = config.apvm_installs_dir.join("git").join(&version_safe);
 
-  if cmd.force || branch == "main" && target.exists() {
+  if target.exists() && (cmd.force || branch == "main") {
     println!("Removing existing");
     fs::remove_dir_all(&target)?;
   } else if !cmd.force && target.exists() {
@@ -57,7 +57,7 @@ pub async fn install_from_git(
   };
 
   let command_options = ExecOptions {
-    cwd: Some(target_temp.to_path_buf()),
+    cwd: Some(inner_temp.path()),
     silent: !cmd.verbose,
     ..Default::default()
   };

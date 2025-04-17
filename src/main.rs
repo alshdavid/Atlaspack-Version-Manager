@@ -33,6 +33,8 @@ pub enum ApvmCommandType {
   Build,
   /// Run "atlaspack watch" using the current version of Atlaspack
   Watch,
+  #[clap(hide = true)]
+  Info(cmd::info::ResolveCommand),
 }
 
 #[derive(Parser, Debug)]
@@ -82,6 +84,7 @@ async fn main() -> anyhow::Result<()> {
     ApvmCommandType::Unload => cmd::unload::main(config).await,
     ApvmCommandType::Env(cmd) => cmd::env::main(config, cmd).await,
     ApvmCommandType::Version => cmd::version::main(config).await,
+    ApvmCommandType::Info(cmd) => cmd::info::main(config, cmd).await,
     ApvmCommandType::Watch => panic!(),
     ApvmCommandType::Build => panic!(),
   }

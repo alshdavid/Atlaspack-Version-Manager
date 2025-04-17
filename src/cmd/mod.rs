@@ -1,4 +1,5 @@
 pub mod env;
+pub mod info;
 pub mod install;
 pub mod install_git;
 pub mod install_local;
