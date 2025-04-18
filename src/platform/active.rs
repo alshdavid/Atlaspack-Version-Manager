@@ -36,4 +36,13 @@ impl ActivePackage {
       static_path: target_path.clone(),
     }))
   }
+
+  // pub fn scan(&self) -> Vec<PackageSummary> {
+  //   todo!()
+  // }
 }
+
+// pub struct PackageSummary {
+//   pub name: String,
+//   pub path: String,
+// }

@@ -1,0 +1,4 @@
+This is a placeholder file used by npm to generate a symlink against.
+
+It is replaced in a postinstall step with the actual binary 
+fetched from GitHub releases.

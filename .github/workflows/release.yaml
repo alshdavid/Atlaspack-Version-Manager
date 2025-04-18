@@ -4,7 +4,7 @@ concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
 
-on: 
+on:
   push:
     branches:
       - "main"
@@ -22,7 +22,7 @@ jobs:
       - run: source ./.github/install-scripts/just/main.ps1
       - run: source ./.github/install-scripts/rust/main.ps1
       - run: just test
-        
+
   format:
     name: 📝 Format
     runs-on: ubuntu-24.04
@@ -31,7 +31,7 @@ jobs:
       - run: source ./.github/install-scripts/just/main.ps1
       - run: source ./.github/install-scripts/rust/main.ps1
       - run: just fmt
-        
+
   lint:
     name: 🤓 Lint
     runs-on: ubuntu-24.04
@@ -50,28 +50,28 @@ jobs:
             arch: amd64
             runner: ubuntu-24.04
             run: rustup target add x86_64-unknown-linux-musl
-              
+
           - name: 🐥 Linux ARM64
             os: linux
             arch: arm64
             runner: ubuntu-24.04-arm
             run: rustup target add aarch64-unknown-linux-musl
-              
+
           - name: 🍎 MacOS AMD64
             os: macos
             arch: amd64
             runner: macos-13
-              
+
           - name: 🍎 MacOS ARM64
             os: macos
             arch: arm64
             runner: macos-15
-              
+
           - name: 🟦 Windows AMD64
             os: windows
             arch: amd64
             runner: windows-latest
-              
+
           - name: 🟦 Windows ARM64
             os: windows
             arch: arm64
@@ -86,7 +86,7 @@ jobs:
       - run: . ./.github/install-scripts/rust/main.ps1
       - if: matrix.config.run
         run: ${{ matrix.config.run }}
-      - env: 
+      - env:
           os: "${{ matrix.config.os }}"
           arch: "${{ matrix.config.arch }}"
           profile: "release"
@@ -98,27 +98,37 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  publish-github-release:
-    name: "🔄 Publish Github Release"
+  vars:
+    name: "📋 Generate Publish Variables"
     runs-on: ubuntu-24.04
-    needs: 
+    needs:
       - test
       - format
       - lint
       - build
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - id: tag
+        run: echo "tag=$(date -u +"v%Y.%m.%d.%H%M").${GITHUB_SHA::4}" >> "$GITHUB_OUTPUT"
+
+  publish-github-release:
+    name: "🔄 Publish Github Release"
+    runs-on: ubuntu-24.04
+    needs:
+      - vars
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with: { path: artifacts }
-      - name: Publish` Github Release
+      - name: Publish Github Release
         env:
+          TAG: ${{needs.vars.outputs.tag}}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
-
-          TAG="$(date -u +"v%Y.%m.%d.%H%M").${GITHUB_SHA::4}"
           echo "Tag: ${TAG}"
-          
+
           gh release create $TAG  --draft --notes "Automatically built binaries"
           gh release edit $TAG --title "🚀 Latest"
 
@@ -129,5 +139,24 @@ jobs:
             tar -czvf ./${name}.tar.gz ./*
             gh release upload $TAG ${name}.tar.gz
           done
-         
+
           gh release edit $TAG --draft=false
+
+  publish-npm-package:
+    name: "🔄 Publish NPM Package"
+    runs-on: ubuntu-24.04
+    needs:
+      - publish-github-release
+      - vars
+    steps:
+      - uses: actions/checkout@v4
+      - run: source ./.github/install-scripts/fnm/main.ps1
+      - env:
+          TAG: ${{needs.vars.outputs.tag}}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> $HOME/.npmrc
+          echo "Tag: ${TAG}"
+          cd npm
+          echo "$TAG" > tag
+          npm publish --access=public

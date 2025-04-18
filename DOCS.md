@@ -2,6 +2,10 @@
 
 A directory is created called `APVM_DIR` which defaults to `$HOME/.local/apvm` with the following structure
 
+env
+pack
+global
+
 ```
 /apvm
   /default

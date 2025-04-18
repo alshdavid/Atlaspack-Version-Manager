@@ -1,0 +1,10 @@
+{
+  "name": "@alshdavid/apvm",
+  "version": "0.0.1",
+  "bin": {
+    "apvm": "./apvm.exe"
+  },
+  "scripts": {
+    "postinstall": "./postinstall.mjs"
+  }
+}
