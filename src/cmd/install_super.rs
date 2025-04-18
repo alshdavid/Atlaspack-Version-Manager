@@ -6,6 +6,7 @@ use xz::read::XzDecoder;
 
 use super::install::InstallCommand;
 use crate::config::Config;
+use crate::platform::constants as c;
 use crate::platform::name;
 use crate::platform::temp_dir::TempDir;
 
@@ -30,8 +31,9 @@ pub async fn install_from_super(
   }
 
   let response = reqwest::get(format!(
-    "https://github.com/alshdavid-forks/atlaspack/releases/download/{}/atlaspack-linux-x64.tar.xz",
+    "https://github.com/alshdavid-forks/atlaspack/releases/download/{}/{}",
     &specifier,
+    c::TARBALL,
   ))
   .await?;
 
