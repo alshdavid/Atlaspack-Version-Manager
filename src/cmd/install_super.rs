@@ -30,18 +30,20 @@ pub async fn install_from_super(
     return Err(anyhow::anyhow!("Already installed",));
   }
 
-  let response = reqwest::get(format!(
+  let url = format!(
     "https://github.com/alshdavid-forks/atlaspack/releases/download/{}/{}",
     &specifier,
     c::TARBALL,
-  ))
-  .await?;
+  );
+
+  println!("Downloading: {}", url);
+
+  let response = reqwest::get(url).await?;
 
   if response.status() == 404 {
     return Err(anyhow::anyhow!("Version '{}' not found", &specifier));
   }
 
-  println!("Downloading");
   let bytes = response.bytes().await?.to_vec();
 
   println!("Extracting");
