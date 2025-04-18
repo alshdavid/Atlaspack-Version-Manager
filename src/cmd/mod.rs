@@ -3,6 +3,7 @@ pub mod info;
 pub mod install;
 pub mod install_git;
 pub mod install_local;
+pub mod install_super;
 pub mod link;
 pub mod list;
 pub mod proxy;

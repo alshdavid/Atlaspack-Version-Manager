@@ -13,7 +13,7 @@ pub struct UseCommand {
   /// Target version to use
   pub version: Option<String>,
 
-  #[arg(short = 'o', long = "origin", default_value = "git")]
+  #[arg(short = 'o', long = "origin", default_value = "super")]
   pub origin: Option<InstallOrigin>,
 }
 
@@ -22,11 +22,43 @@ pub async fn main(
   cmd: UseCommand,
 ) -> anyhow::Result<()> {
   match cmd.origin {
-    Some(InstallOrigin::Super) => todo!(),
+    Some(InstallOrigin::Super) => use_super(config, cmd).await,
     Some(InstallOrigin::Git) => use_git(config, cmd).await,
     Some(InstallOrigin::Local) => use_local(config, cmd).await,
     None => todo!(),
   }
+}
+
+async fn use_super(
+  config: Config,
+  cmd: UseCommand,
+) -> anyhow::Result<()> {
+  let Some(version) = cmd.version else {
+    return Err(anyhow::anyhow!("Version not installed"));
+  };
+  let version_safe = name::encode(&version)?;
+
+  let installs_dir = config.apvm_installs_dir.join("super");
+  let target_dir = installs_dir.join(&version_safe);
+
+  let target_static = config.apvm_active_dir.join("static");
+  let target_bin = config.apvm_active_dir.join("bin");
+
+  if !fs::exists(&target_dir)? {
+    return Err(anyhow::anyhow!("Version not installed"));
+  }
+
+  if fs::exists(&config.apvm_active_dir)? {
+    fs::remove_dir_all(&config.apvm_active_dir)?;
+  }
+  fs::create_dir_all(&config.apvm_active_dir)?;
+  fs::create_dir_all(&target_bin)?;
+
+  link::hard_link_or_copy(&config.exe_path, &target_bin.join("atlaspack"))?;
+  link::soft_link(&target_dir, &target_static)?;
+
+  println!("Using: {} (git)", version);
+  Ok(())
 }
 
 async fn use_git(

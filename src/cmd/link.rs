@@ -2,11 +2,11 @@ use std::fs;
 
 use clap::Parser;
 
-use crate::{config::Config, platform::atlaspack_packages::KNOWN_PACKAGES};
+use crate::config::Config;
+use crate::platform::atlaspack_packages::KNOWN_PACKAGES;
 
 #[derive(Debug, Parser)]
-pub struct LinkCommand {
-}
+pub struct LinkCommand {}
 
 pub async fn main(
   config: Config,
@@ -25,7 +25,7 @@ pub async fn main(
   for (name, inner_main) in KNOWN_PACKAGES {
     let package_path = node_modules_atlaspack.join(name);
     let package_json_path = package_path.join("package.json");
-    
+
     let package_json_bytes = if fs::exists(&package_json_path)? {
       fs::read_to_string(&package_json_path)?
     } else {
@@ -50,26 +50,18 @@ pub async fn main(
       // continue
     }
 
-    
-
-//     let entry_code = format!(r#"
-// if (process.env.APVM_PATH) {{
-//   module.exports = require("{}/{}")
-// }} else {{
-//   module.exports = require("{}")
-// }}
-//     "#, package_main, package_main);
-//     println!("{}", package_main)
+    //     let entry_code = format!(r#"
+    // if (process.env.APVM_PATH) {{
+    //   module.exports = require("{}/{}")
+    // }} else {{
+    //   module.exports = require("{}")
+    // }}
+    //     "#, package_main, package_main);
+    //     println!("{}", package_main)
   }
-
 
   Ok(())
 }
-
-
-
-
-
 
 /*
 // let node_modules_apvm = node_modules.join(".apvm");

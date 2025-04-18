@@ -4,6 +4,7 @@ use clap::Parser;
 
 use super::install_git::install_from_git;
 use super::install_local::install_from_local;
+use super::install_super::install_from_super;
 use crate::config::Config;
 use crate::platform::origin::InstallOrigin;
 
@@ -12,7 +13,7 @@ pub struct InstallCommand {
   /// Target version to install
   pub version: String,
 
-  #[arg(short = 'o', long = "origin", default_value = "git")]
+  #[arg(short = 'o', long = "origin", default_value = "super")]
   pub origin: InstallOrigin,
 
   #[arg(short = 'a', long = "alias")]
@@ -44,6 +45,6 @@ pub async fn main(
   match cmd.origin {
     InstallOrigin::Git => install_from_git(config, cmd).await,
     InstallOrigin::Local => install_from_local(config, cmd).await,
-    InstallOrigin::Super => todo!(),
+    InstallOrigin::Super => install_from_super(config, cmd).await,
   }
 }

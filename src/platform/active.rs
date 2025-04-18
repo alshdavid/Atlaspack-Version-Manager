@@ -22,15 +22,15 @@ impl ActivePackage {
     if !fs::exists(&target_path)? {
       return Ok(None);
     }
-    let link = fs::read_link(config.apvm_active_dir.join("static"))?;
-    let link_name_encoded = link.try_file_name()?;
-    let link_name = name::decode(&link_name_encoded)?;
-    let link_kind = link.try_parent()?.try_file_name()?;
+    let real_path = fs::read_link(config.apvm_active_dir.join("static"))?;
+    let name_encoded = real_path.try_file_name()?;
+    let name = name::decode(&name_encoded)?;
+    let kind = real_path.try_parent()?.try_file_name()?;
     Ok(Some(Self {
-      kind: InstallOrigin::try_from(link_kind)?,
-      name_encoded: link_name_encoded,
-      name: link_name,
-      real_path: link,
+      kind: InstallOrigin::try_from(kind)?,
+      name_encoded,
+      name,
+      real_path,
       link_path: config.apvm_active_dir.clone(),
       static_path: target_path.clone(),
     }))

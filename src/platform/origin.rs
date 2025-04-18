@@ -12,7 +12,8 @@ impl std::fmt::Display for InstallOrigin {
     &self,
     f: &mut std::fmt::Formatter<'_>,
   ) -> std::fmt::Result {
-    write!(f, "{}", self.to_string())
+    let s: String = InstallOrigin::into(self.clone());
+    write!(f, "{}", s)
   }
 }
 
@@ -37,9 +38,9 @@ impl TryFrom<String> for InstallOrigin {
   }
 }
 
-impl Into<String> for InstallOrigin {
-  fn into(self) -> String {
-    match self {
+impl From<InstallOrigin> for String {
+  fn from(val: InstallOrigin) -> Self {
+    match val {
       InstallOrigin::Super => "super",
       InstallOrigin::Git => "git",
       InstallOrigin::Local => "local",

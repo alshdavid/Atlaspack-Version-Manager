@@ -1,22 +1,26 @@
 // Hidden utilities to access dynamically set values
-use clap::{Parser, Subcommand};
+use clap::Parser;
+use clap::Subcommand;
 
-use crate::{config::Config, platform::{active::ActivePackage, exec::{exec_blocking, ExecOptions}, path_ext::PathExt, runtime::resolve_runtime}};
+use crate::config::Config;
+use crate::platform::active::ActivePackage;
+use crate::platform::exec::ExecOptions;
+use crate::platform::exec::exec_blocking;
+use crate::platform::path_ext::PathExt;
+use crate::platform::runtime::resolve_runtime;
 
 #[derive(Debug, Subcommand, Clone)]
 pub enum InfoCommandType {
   LinkPath,
   RealPath,
-  Resolve{
-    specifier: String
-  },
+  Resolve { specifier: String },
   Kind,
 }
 
 #[derive(Debug, Parser)]
 pub struct ResolveCommand {
   #[clap(subcommand)]
-  pub query: InfoCommandType
+  pub query: InfoCommandType,
 }
 
 #[rustfmt::skip]
@@ -44,7 +48,7 @@ pub async fn main(config: Config, cmd: ResolveCommand) -> anyhow::Result<()> {
     InfoCommandType::Resolve{specifier}=> {
       let runtime = resolve_runtime("node")?;
 
-      exec_blocking(&[&runtime.try_to_string()?, "-e", &format!("console.log(require.resolve('{}'))", specifier)], ExecOptions {
+      exec_blocking([&runtime.try_to_string()?, "-e", &format!("console.log(require.resolve('{}'))", specifier)], ExecOptions {
         cwd: Some(config.apvm_active_dir.join("static")),
         silent: false,
         env: None,

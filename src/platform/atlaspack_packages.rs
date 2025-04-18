@@ -1,5 +1,5 @@
 #[rustfmt::skip]
-pub static KNOWN_PACKAGES: &'static [(&str, &str)] = &[
+pub static KNOWN_PACKAGES: &[(&str, &str)] = &[
   ("lmdb-js-lite", "dist/compat.js"),
   ("@atlaspack/bundler-experimental", "lib/index.js"),
   ("@atlaspack/bundler-default", "lib/DefaultBundler.js"),
