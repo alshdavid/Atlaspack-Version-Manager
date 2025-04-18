@@ -6,6 +6,7 @@ use rand::distr::Alphanumeric;
 use crate::env::Env;
 use crate::platform::path_ext::*;
 
+#[allow(unused)]
 #[derive(Debug)]
 pub struct Config {
   pub id: String,

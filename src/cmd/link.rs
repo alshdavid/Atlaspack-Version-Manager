@@ -1,17 +1,19 @@
-use std::fs;
-
 use clap::Parser;
 
 use crate::config::Config;
-use crate::platform::atlaspack_packages::KNOWN_PACKAGES;
 
 #[derive(Debug, Parser)]
 pub struct LinkCommand {}
 
 pub async fn main(
-  config: Config,
+  _config: Config,
   _cmd: LinkCommand,
 ) -> anyhow::Result<()> {
+  Ok(())
+}
+
+/*
+
   let node_modules = config.pwd.join("node_modules");
   let node_modules_bin = node_modules.join(".bin");
   let node_modules_atlaspack = node_modules.join("@atlaspack");
@@ -60,10 +62,9 @@ pub async fn main(
     //     println!("{}", package_main)
   }
 
-  Ok(())
-}
 
-/*
+
+
 // let node_modules_apvm = node_modules.join(".apvm");
   // let node_modules_apvm_old = node_modules_apvm.join("old");
   // let node_modules_apvm_old_atlaspack = node_modules_apvm_old.join("@atlaspack");

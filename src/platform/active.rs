@@ -7,6 +7,7 @@ use super::path_ext::*;
 use crate::config::Config;
 
 #[allow(unused)]
+#[derive(Debug)]
 pub struct ActivePackage {
   pub kind: InstallOrigin,
   pub name_encoded: String,

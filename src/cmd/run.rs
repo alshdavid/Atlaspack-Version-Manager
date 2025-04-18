@@ -19,7 +19,6 @@ pub async fn main(
     return Err(anyhow::anyhow!("No active version installed"));
   }
 
-  let link = fs::read_link(config.apvm_active_dir.join("static"))?;
-  atlaspack_exec(cmd.command, &link, &config).await?;
+  atlaspack_exec(cmd.command, &config).await?;
   Ok(())
 }

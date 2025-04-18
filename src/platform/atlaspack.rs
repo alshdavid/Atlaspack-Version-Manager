@@ -1,28 +1,52 @@
 use std::collections::HashMap;
-use std::path::Path;
 
+use super::active::ActivePackage;
 use super::exec::ExecOptions;
 use super::exec::exec_blocking;
 use super::runtime::resolve_runtime;
 use crate::config::Config;
+use crate::platform::origin::InstallOrigin;
 use crate::platform::path_ext::*;
 
 pub async fn atlaspack_exec(
   command: Vec<String>,
-  source_dir: &Path,
   config: &Config,
 ) -> anyhow::Result<()> {
   let runtime = resolve_runtime(&config.apvm_runtime)?;
-  let apvm_path = config.apvm_active_dir.try_to_string()?;
+  let Some(active) = ActivePackage::new(config)? else {
+    return Err(anyhow::anyhow!("No active package selected"));
+  };
 
-  let cli_dir = source_dir.join("packages").join("core").join("cli");
-  let target_entry = cli_dir.join("lib").join("cli.js");
+  let bin_path = match active.kind {
+    InstallOrigin::Super => active.static_path.join("cli").join("lib").join("cli.js"),
+    InstallOrigin::Git => active
+      .static_path
+      .join("packages")
+      .join("core")
+      .join("cli")
+      .join("lib")
+      .join("cli.js"),
+    InstallOrigin::Local => active
+      .static_path
+      .join("packages")
+      .join("core")
+      .join("cli")
+      .join("lib")
+      .join("cli.js"),
+  };
 
   let mut args = Vec::<String>::new();
 
   args.push(runtime.try_to_string()?);
-  args.push(target_entry.try_to_string()?);
+  args.push(bin_path.try_to_string()?);
   args.extend(command);
+
+  #[rustfmt::skip]
+  let env = HashMap::from_iter(vec![
+    ("APVM_STATIC_PATH".to_string(), active.static_path.try_to_string()?),
+    ("APVM_PATH".to_string(), active.real_path.try_to_string()?),
+    ("APVM_KIND".to_string(), active.kind.to_string()),
+  ]);
 
   let (tx, rx) = tokio::sync::oneshot::channel::<anyhow::Result<()>>();
 
@@ -31,10 +55,7 @@ pub async fn atlaspack_exec(
     match exec_blocking(
       &args,
       ExecOptions {
-        env: Some(HashMap::from_iter(vec![(
-          "APVM_PATH".to_string(),
-          apvm_path,
-        )])),
+        env: Some(env),
         ..ExecOptions::default()
       },
     ) {
