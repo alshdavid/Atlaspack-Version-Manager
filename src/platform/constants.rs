@@ -11,7 +11,7 @@ pub static TARBALL: &str = "atlaspack-linux-arm64.tar.xz";
 pub static TARBALL: &str = "atlaspack-linux-x64.tar.xz";
 
 #[cfg(all(target_os = "windows", target_arch = "aarch64"))]
-pub static SUTARBALLFFIX: &str = "atlaspack-windows-arm64.tar.xz";
+pub static TARBALL: &str = "atlaspack-windows-arm64.tar.xz";
 
 #[cfg(all(target_os = "windows", target_arch = "x86_64"))]
 pub static TARBALL: &str = "atlaspack-windows-x64.tar.xz";
