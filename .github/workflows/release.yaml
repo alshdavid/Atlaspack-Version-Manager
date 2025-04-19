@@ -45,38 +45,38 @@ jobs:
     strategy:
       matrix:
         config:
-          - name: 🐥 Linux AMD64
-            os: linux
-            arch: amd64
-            runner: ubuntu-24.04
-            run: rustup target add x86_64-unknown-linux-musl
+          # - name: 🐥 Linux AMD64
+          #   os: linux
+          #   arch: amd64
+          #   runner: ubuntu-24.04
+          #   run: rustup target add x86_64-unknown-linux-musl
 
-          - name: 🐥 Linux ARM64
-            os: linux
-            arch: arm64
-            runner: ubuntu-24.04-arm
-            run: rustup target add aarch64-unknown-linux-musl
+          # - name: 🐥 Linux ARM64
+          #   os: linux
+          #   arch: arm64
+          #   runner: ubuntu-24.04-arm
+          #   run: rustup target add aarch64-unknown-linux-musl
 
-          - name: 🍎 MacOS AMD64
-            os: macos
-            arch: amd64
-            runner: macos-13
+          # - name: 🍎 MacOS AMD64
+          #   os: macos
+          #   arch: amd64
+          #   runner: macos-13
 
           - name: 🍎 MacOS ARM64
             os: macos
             arch: arm64
             runner: macos-15
 
-          - name: 🟦 Windows AMD64
-            os: windows
-            arch: amd64
-            runner: windows-latest
+          # - name: 🟦 Windows AMD64
+          #   os: windows
+          #   arch: amd64
+          #   runner: windows-latest
 
-          - name: 🟦 Windows ARM64
-            os: windows
-            arch: arm64
-            runner: windows-latest
-            run: rustup target add aarch64-pc-windows-msvc
+          # - name: 🟦 Windows ARM64
+          #   os: windows
+          #   arch: arm64
+          #   runner: windows-latest
+          #   run: rustup target add aarch64-pc-windows-msvc
 
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner }}

@@ -12,7 +12,6 @@ unzip -q $out_dir/fnm/fnm.zip -d $out_dir/fnm/bin
 rm -rf $out_dir/fnm/fnm.zip
 
 chmod +x $out_dir/fnm/bin/fnm
-ln -s $out_dir/fnm/bin/fnm $out_dir/fnm/bin/nvm
 
 eval "$(fnm env)"
-nvm use
+fnm use
