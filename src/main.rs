@@ -32,8 +32,7 @@ pub enum ApvmCommandType {
   /// Version information
   Version,
   /// Run command with specified version of atlaspack
-  Atlaspack
-  ,
+  Atlaspack,
   #[clap(hide = true)]
   Info(cmd::info::ResolveCommand),
 }
