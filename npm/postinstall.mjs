@@ -45,7 +45,7 @@ async function downloadBin() {
   let tag = "latest";
   if (fs.existsSync(path.join(__dirname, "tag"))) {
     tag = (
-      await fs.promises.readFile(path.join(__dirname, "tag"), "uft8")
+      await fs.promises.readFile(path.join(__dirname, "tag"), "utf8")
     ).trim();
   }
 
