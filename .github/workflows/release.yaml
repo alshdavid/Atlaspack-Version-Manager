@@ -11,7 +11,6 @@ on:
 
 env:
   PROJECT_NAME: apvm
-  JUST_VERSION: "1.36.0"
 
 jobs:
   vars:
@@ -21,15 +20,19 @@ jobs:
       tag: ${{ steps.tag.outputs.tag }}
     steps:
       - id: tag
-        run: echo "tag=$(date -u +"v%Y.%m.%d.%H%M").${GITHUB_SHA::4}" >> "$GITHUB_OUTPUT"
+        run: |
+          declare -i var=$(npm info @alshdavid/apvm version | cut -d "." -f 3)
+          var=$var+1
+          echo TAG: 0.0.$var
+          echo "tag=0.0.$var" >> "$GITHUB_OUTPUT"
 
   test:
     name: 🧪 Test
     runs-on: ubuntu-24.04
     steps:
       - { uses: actions/checkout@v4, with: { submodules: true } }
-      - run: source ./.github/install-scripts/just/main.ps1
-      - run: source ./.github/install-scripts/rust/main.ps1
+      - run: . ./.github/install-scripts/just/main.ps1
+      - run: . ./.github/install-scripts/rust/main.ps1
       - run: just test
 
   format:
@@ -37,8 +40,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - { uses: actions/checkout@v4, with: { submodules: true } }
-      - run: source ./.github/install-scripts/just/main.ps1
-      - run: source ./.github/install-scripts/rust/main.ps1
+      - run: . ./.github/install-scripts/just/main.ps1
+      - run: . ./.github/install-scripts/rust/main.ps1
       - run: just fmt
 
   lint:
@@ -46,8 +49,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - { uses: actions/checkout@v4, with: { submodules: true } }
-      - run: source ./.github/install-scripts/just/main.ps1
-      - run: source ./.github/install-scripts/rust/main.ps1
+      - run: . ./.github/install-scripts/just/main.ps1
+      - run: . ./.github/install-scripts/rust/main.ps1
       - run: just lint
 
   build:
@@ -58,13 +61,11 @@ jobs:
             os: linux
             arch: amd64
             runner: ubuntu-24.04
-            run: rustup target add x86_64-unknown-linux-musl
 
           - name: 🐥 Linux ARM64
             os: linux
             arch: arm64
             runner: ubuntu-24.04-arm
-            run: rustup target add aarch64-unknown-linux-musl
 
           - name: 🍎 MacOS AMD64
             os: macos
@@ -89,12 +90,23 @@ jobs:
 
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner }}
+    needs:
+      - vars
     steps:
       - { uses: actions/checkout@v4, with: { submodules: true } }
       - run: . ./.github/install-scripts/just/main.ps1
+      - run: . ./.github/install-scripts/nodejs/main.ps1
       - run: . ./.github/install-scripts/rust/main.ps1
       - if: matrix.config.run
         run: ${{ matrix.config.run }}
+      - if: ${{ matrix.config.os == 'windows' }}
+        env:
+          TAG: ${{needs.vars.outputs.tag}}
+        run: node .github/scripts/string-replace.mjs ./Cargo.toml "0.0.0-local" "$env:TAG"
+      - if: ${{ matrix.config.os != 'windows' }}
+        env:
+          TAG: ${{needs.vars.outputs.tag}}
+        run: node .github/scripts/string-replace.mjs ./Cargo.toml "0.0.0-local" "$TAG"
       - env:
           os: "${{ matrix.config.os }}"
           arch: "${{ matrix.config.arch }}"
@@ -145,7 +157,6 @@ jobs:
     name: "🔄 Publish NPM Package"
     runs-on: ubuntu-24.04
     needs:
-      - publish-github-release
       - vars
       - test
       - format
@@ -153,13 +164,14 @@ jobs:
       - build
     steps:
       - uses: actions/checkout@v4
-      - run: source ./.github/install-scripts/fnm/main.ps1
+      - run: . ./.github/install-scripts/nodejs/main.ps1
       - env:
           TAG: ${{needs.vars.outputs.tag}}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> $HOME/.npmrc
           echo "Tag: ${TAG}"
+          node .github/scripts/string-replace.mjs ./npm/package.json "0.0.0-local" "$TAG" 
           cd npm
           echo "$TAG" > tag
           npm publish --access=public

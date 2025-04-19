@@ -8,8 +8,10 @@ import * as tar from "./tar.cjs";
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const __bin = path.join(__dirname, "apvm.exe");
 const __bin_unix = path.join(__dirname, "apvm");
+
 const APVM_BIN_PATH = process.env.APVM_BIN_PATH;
 const APVM_SKIP_DOWNLOAD = process.env.APVM_SKIP_DOWNLOAD;
+const APVM_FORCE_TAG = process.env.APVM_FORCE_TAG;
 
 const os = {
   darwin: "macos",
@@ -40,7 +42,7 @@ async function downloadBin() {
     );
   }
 
-  let tag = "latest";
+  let tag = APVM_FORCE_TAG || "latest";
   if (fs.existsSync(path.join(__dirname, "tag"))) {
     tag = (
       await fs.promises.readFile(path.join(__dirname, "tag"), "utf8")

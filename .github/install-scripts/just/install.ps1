@@ -1,9 +1,4 @@
-if ( $env:JUST_VERSION -eq $null ) 
-{
-  $target_version = curl --silent "https://api.github.com/repos/casey/just/releases/latest" | jq -r '.tag_name'
-} else {
-  $target_version = $env:JUST_VERSION
-}
+$target_version = "1.40.0"
 
 if ( $env:OUT_DIR -eq $null ) 
 {

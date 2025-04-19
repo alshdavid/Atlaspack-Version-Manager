@@ -2,7 +2,7 @@
 set -e
 
 # Default to current latest
-target_version="$JUST_VERSION"
+target_version="1.40.0"
 if [ "$target_version" = "" ]; then
   target_version=$(curl --silent "https://api.github.com/repos/casey/just/releases/latest" | jq -r '.tag_name')
 fi

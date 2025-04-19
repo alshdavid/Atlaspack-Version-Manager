@@ -1,6 +1,6 @@
 {
   "name": "@alshdavid/apvm",
-  "version": "0.0.4",
+  "version": "0.0.0-local",
   "bin": {
     "apvm": "./apvm.exe"
   },
