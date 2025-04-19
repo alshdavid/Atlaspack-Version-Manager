@@ -15,4 +15,5 @@ chmod +x $out_dir/fnm/bin/fnm
 export PATH="$out_dir/fnm/bin:$PATH"
 
 eval "$(fnm env)"
+fnm install
 fnm use
