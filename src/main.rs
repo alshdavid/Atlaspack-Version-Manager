@@ -31,12 +31,8 @@ pub enum ApvmCommandType {
   Use(cmd::r#use::UseCommand),
   /// Version information
   Version,
-  /// Run "atlaspack build" using the current version of Atlaspack
+  /// Run command with specified version of atlaspack
   Atlaspack,
-  /// Run "atlaspack build" using the current version of Atlaspack
-  Build,
-  /// Run "atlaspack watch" using the current version of Atlaspack
-  Watch,
   #[clap(hide = true)]
   Info(cmd::info::ResolveCommand),
 }
