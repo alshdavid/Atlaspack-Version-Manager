@@ -5,6 +5,6 @@
     "apvm": "./apvm.exe"
   },
   "scripts": {
-    "postinstall": "./postinstall.mjs"
+    "postinstall": "node ./postinstall.mjs"
   }
 }
