@@ -44,7 +44,9 @@ async function downloadBin() {
 
   let tag = "latest";
   if (fs.existsSync(path.join(__dirname, "tag"))) {
-    tag = await fs.promises.readFile(path.join(__dirname, "tag"), "uft8");
+    tag = (
+      await fs.promises.readFile(path.join(__dirname, "tag"), "uft8")
+    ).trim();
   }
 
   let url = `https://github.com/alshdavid/atlaspack-version-manager/releases/latest/download/apvm-${os}-${arch}.tar.gz`;

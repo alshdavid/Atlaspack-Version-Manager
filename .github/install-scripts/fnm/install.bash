@@ -1,6 +1,6 @@
 #!/bin/bash
 
-out_dir="$HOME/.local/fnm"
+out_dir="$HOME/.local"
 
 rm -rf $out_dir/fnm
 mkdir $out_dir/fnm
