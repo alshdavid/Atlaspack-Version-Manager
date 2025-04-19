@@ -3,7 +3,7 @@
 out_dir="$HOME/.local"
 
 rm -rf $out_dir/fnm
-mkdir $out_dir/fnm
+mkdir -p $out_dir/fnm
 mkdir $out_dir/fnm/bin
 mkdir $out_dir/fnm/fnm_dir
 
