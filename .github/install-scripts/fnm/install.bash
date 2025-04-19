@@ -12,7 +12,7 @@ unzip -q $out_dir/fnm/fnm.zip -d $out_dir/fnm/bin
 rm -rf $out_dir/fnm/fnm.zip
 
 chmod +x $out_dir/fnm/bin/fnm
-export PATH="$out_dir/fnm/bin/fnm:$PATH"
+export PATH="$out_dir/fnm/bin:$PATH"
 
 eval "$(fnm env)"
 fnm use

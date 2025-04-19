@@ -14,6 +14,15 @@ env:
   JUST_VERSION: "1.36.0"
 
 jobs:
+  vars:
+    name: "📋 Generate Variables"
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - id: tag
+        run: echo "tag=$(date -u +"v%Y.%m.%d.%H%M").${GITHUB_SHA::4}" >> "$GITHUB_OUTPUT"
+
   test:
     name: 🧪 Test
     runs-on: ubuntu-24.04
@@ -40,15 +49,6 @@ jobs:
       - run: source ./.github/install-scripts/just/main.ps1
       - run: source ./.github/install-scripts/rust/main.ps1
       - run: just lint
-
-  vars:
-    name: "📋 Generate Publish Variables"
-    runs-on: ubuntu-24.04
-    outputs:
-      tag: ${{ steps.tag.outputs.tag }}
-    steps:
-      - id: tag
-        run: echo "tag=$(date -u +"v%Y.%m.%d.%H%M").${GITHUB_SHA::4}" >> "$GITHUB_OUTPUT"
 
   build:
     strategy:
