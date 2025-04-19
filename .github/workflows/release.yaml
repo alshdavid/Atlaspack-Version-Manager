@@ -41,6 +41,15 @@ jobs:
       - run: source ./.github/install-scripts/rust/main.ps1
       - run: just lint
 
+  vars:
+    name: "📋 Generate Publish Variables"
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - id: tag
+        run: echo "tag=$(date -u +"v%Y.%m.%d.%H%M").${GITHUB_SHA::4}" >> "$GITHUB_OUTPUT"
+
   build:
     strategy:
       matrix:
@@ -98,25 +107,15 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  vars:
-    name: "📋 Generate Publish Variables"
-    runs-on: ubuntu-24.04
-    needs:
-      - test
-      - format
-      - lint
-      - build
-    outputs:
-      tag: ${{ steps.tag.outputs.tag }}
-    steps:
-      - id: tag
-        run: echo "tag=$(date -u +"v%Y.%m.%d.%H%M").${GITHUB_SHA::4}" >> "$GITHUB_OUTPUT"
-
   publish-github-release:
     name: "🔄 Publish Github Release"
     runs-on: ubuntu-24.04
     needs:
       - vars
+      - test
+      - format
+      - lint
+      - build
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -148,6 +147,10 @@ jobs:
     needs:
       - publish-github-release
       - vars
+      - test
+      - format
+      - lint
+      - build
     steps:
       - uses: actions/checkout@v4
       - run: source ./.github/install-scripts/fnm/main.ps1
