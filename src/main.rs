@@ -64,17 +64,15 @@ async fn main() -> anyhow::Result<()> {
     return Err(anyhow::anyhow!("Run 'apvm env' first"));
   }
 
-  println!("{:?}", config
-  .argv
-  .first());
+  println!("{:?}", config.argv.first());
 
   // Commands to proxy
   match config.argv.first().map(|v| v.as_str()) {
     Some("atlaspack") => {
       let mut config = config;
       config.argv.remove(0);
-      return cmd::proxy::main(config).await
-    },
+      return cmd::proxy::main(config).await;
+    }
     Some("build") => return cmd::proxy::main(config).await,
     Some("watch") => return cmd::proxy::main(config).await,
     _ => {}
