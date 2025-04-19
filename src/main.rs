@@ -32,7 +32,8 @@ pub enum ApvmCommandType {
   /// Version information
   Version,
   /// Run command with specified version of atlaspack
-  Atlaspack,
+  Atlaspack
+  ,
   #[clap(hide = true)]
   Info(cmd::info::ResolveCommand),
 }
@@ -93,7 +94,5 @@ async fn main() -> anyhow::Result<()> {
     ApvmCommandType::Version => cmd::version::main(config).await,
     ApvmCommandType::Info(cmd) => cmd::info::main(config, cmd).await,
     ApvmCommandType::Atlaspack => panic!(),
-    ApvmCommandType::Watch => panic!(),
-    ApvmCommandType::Build => panic!(),
   }
 }
