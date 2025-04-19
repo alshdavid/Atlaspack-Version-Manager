@@ -7,6 +7,7 @@ import * as tar from "./tar.cjs";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const __bin = path.join(__dirname, "apvm.exe");
+const __bin_unix = path.join(__dirname, "apvm");
 const APVM_BIN_PATH = process.env.APVM_BIN_PATH;
 const APVM_SKIP_DOWNLOAD = process.env.APVM_SKIP_DOWNLOAD;
 
@@ -30,9 +31,6 @@ void (async function main() {
   } else {
     await downloadBin();
   }
-  throw new Error(
-    "No APVM binary available. You can compile it yourself and specify $APVM_BIN_PATH"
-  );
 })();
 
 async function downloadBin() {
@@ -76,5 +74,10 @@ async function downloadBin() {
 
   file.pipe(writable);
   await new Promise((res) => writable.on("close", res));
+
+  await fs.promises.rm(__bin, { recursive: true, force: true });
+  if (fs.existsSync(__bin_unix)) {
+    await fs.promises.rename(__bin_unix, __bin);
+  }
   await fs.promises.chmod(__bin, "755");
 }
