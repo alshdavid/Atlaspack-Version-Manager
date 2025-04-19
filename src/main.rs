@@ -32,6 +32,8 @@ pub enum ApvmCommandType {
   /// Version information
   Version,
   /// Run "atlaspack build" using the current version of Atlaspack
+  Atlaspack,
+  /// Run "atlaspack build" using the current version of Atlaspack
   Build,
   /// Run "atlaspack watch" using the current version of Atlaspack
   Watch,
@@ -66,8 +68,17 @@ async fn main() -> anyhow::Result<()> {
     return Err(anyhow::anyhow!("Run 'apvm env' first"));
   }
 
+  println!("{:?}", config
+  .argv
+  .first());
+
   // Commands to proxy
   match config.argv.first().map(|v| v.as_str()) {
+    Some("atlaspack") => {
+      let mut config = config;
+      config.argv.remove(0);
+      return cmd::proxy::main(config).await
+    },
     Some("build") => return cmd::proxy::main(config).await,
     Some("watch") => return cmd::proxy::main(config).await,
     _ => {}
@@ -87,6 +98,7 @@ async fn main() -> anyhow::Result<()> {
     ApvmCommandType::Env(cmd) => cmd::env::main(config, cmd).await,
     ApvmCommandType::Version => cmd::version::main(config).await,
     ApvmCommandType::Info(cmd) => cmd::info::main(config, cmd).await,
+    ApvmCommandType::Atlaspack => panic!(),
     ApvmCommandType::Watch => panic!(),
     ApvmCommandType::Build => panic!(),
   }
