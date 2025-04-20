@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use crate::env::Env;
+use crate::platform::apvmrc::ApvmRc;
 use crate::platform::path_ext::*;
 
 #[allow(unused)]
@@ -15,6 +16,7 @@ pub struct Config {
   pub apvm_installs_dir: PathBuf,
   pub apvm_global_dir: PathBuf,
   pub apvm_runtime: String,
+  pub apvm_rc: Option<ApvmRc>,
   // If an APVM_SESSION env var is supplied
   pub session_id: Option<String>,
   pub apvm_active_dir: Option<PathBuf>,
@@ -42,9 +44,12 @@ impl Config {
 
     let apvm_global_dir = env.apvm_dir.join("global");
 
+    let pwd = std::env::current_dir()?;
+    let apvm_rc = ApvmRc::scan(&pwd)?;
+
     Ok(Self {
       session_id: env.apvm_session.clone(),
-      pwd: std::env::current_dir()?,
+      pwd,
       exe_path,
       exe_stem,
       argv,
@@ -52,6 +57,7 @@ impl Config {
       apvm_dir_temp: env.apvm_dir.join(".temp"),
       apvm_installs_dir,
       apvm_global_dir,
+      apvm_rc,
       apvm_active_dir: apvm_install_dir,
       apvm_runtime: env.apvm_runtime.clone(),
     })

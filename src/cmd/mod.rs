@@ -7,6 +7,7 @@ pub mod install_local;
 pub mod install_super;
 pub mod link;
 pub mod list;
+pub mod node_modules;
 pub mod proxy;
 pub mod uninstall;
 pub mod r#use;

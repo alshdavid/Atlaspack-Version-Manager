@@ -20,7 +20,8 @@ pub enum ApvmCommandType {
   /// Install a version of Atlaspack
   Install(cmd::install::InstallCommand),
   /// Link Atlaspack into node_modules
-  Link(cmd::link::LinkCommand),
+  #[command(name = "node_modules")]
+  NodeModules(cmd::node_modules::NodeModulesCommand),
   /// List installed versions of Atlaspack
   List(cmd::list::ListCommand),
   /// Uninstall a previously installed version of Atlaspack
@@ -68,7 +69,7 @@ async fn main() -> anyhow::Result<()> {
     ApvmCommandType::Global(cmd) => cmd::global::main(config, cmd).await,
     ApvmCommandType::Use(cmd) => cmd::r#use::main(config, cmd).await,
     ApvmCommandType::List(cmd) => cmd::list::main(config, cmd).await,
-    ApvmCommandType::Link(cmd) => cmd::link::main(config, cmd).await,
+    ApvmCommandType::NodeModules(cmd) => cmd::node_modules::main(config, cmd).await,
     ApvmCommandType::Uninstall(cmd) => cmd::uninstall::main(config, cmd).await,
     ApvmCommandType::Env(cmd) => cmd::env::main(config, cmd).await,
     ApvmCommandType::Version => cmd::version::main(config).await,
