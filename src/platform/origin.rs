@@ -1,9 +1,10 @@
 use clap::ValueEnum;
 use serde::Deserialize;
 
-#[derive(PartialEq, Eq, Debug, ValueEnum, Clone, Deserialize)]
+#[derive(Default, PartialEq, Eq, Debug, ValueEnum, Clone, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum InstallOrigin {
+  #[default]
   Super,
   Git,
   Local,

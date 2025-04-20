@@ -10,7 +10,7 @@ pub struct GlobalCommand {
   pub version: Option<String>,
 
   #[arg(short = 'o', long = "origin", default_value = "super")]
-  pub origin: Option<InstallOrigin>,
+  pub origin: InstallOrigin,
 }
 
 pub async fn main(

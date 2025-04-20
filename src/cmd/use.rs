@@ -19,19 +19,34 @@ pub struct UseCommand {
   pub global: bool,
 
   #[arg(short = 'o', long = "origin", default_value = "super")]
-  pub origin: Option<InstallOrigin>,
+  pub origin: InstallOrigin,
 }
 
 pub async fn main(
   config: Config,
   cmd: UseCommand,
 ) -> anyhow::Result<()> {
-  match cmd.origin {
-    Some(InstallOrigin::Super) => use_super(config, cmd).await,
-    Some(InstallOrigin::Git) => use_git(config, cmd).await,
-    Some(InstallOrigin::Local) => use_local(config, cmd).await,
-    None => todo!(),
+  if cmd.version.is_some() {
+    return match cmd.origin {
+      InstallOrigin::Super => use_super(config, cmd).await,
+      InstallOrigin::Git => use_git(config, cmd).await,
+      InstallOrigin::Local => use_local(config, cmd).await,
+    };
   }
+
+  let Some(apvm_rc) = config.apvm_rc.clone() else {
+    return Err(anyhow::anyhow!("No version specified"));
+  };
+
+  Box::pin(main(
+    config,
+    UseCommand {
+      version: apvm_rc.specifier,
+      global: cmd.global,
+      origin: apvm_rc.origin,
+    },
+  ))
+  .await
 }
 
 async fn use_super(

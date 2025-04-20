@@ -10,7 +10,7 @@ use super::origin::InstallOrigin;
 #[serde(rename_all = "snake_case")]
 pub struct ApvmRc {
   pub specifier: Option<String>,
-  pub origin: Option<InstallOrigin>,
+  pub origin: InstallOrigin,
 }
 
 impl ApvmRc {
@@ -23,7 +23,7 @@ impl ApvmRc {
         if !contents.contains("=") && contents.contains(".") {
           return Ok(Some(ApvmRc {
             specifier: Some(contents.trim().to_string()),
-            origin: Some(InstallOrigin::Super),
+            origin: InstallOrigin::default(),
           }));
         }
         return Ok(Some(toml::from_str::<ApvmRc>(&contents)?));
