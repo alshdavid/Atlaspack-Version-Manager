@@ -171,7 +171,8 @@ jobs:
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> $HOME/.npmrc
           echo "Tag: ${TAG}"
-          node .github/scripts/string-replace.mjs ./npm/package.json "0.0.0-local" "$TAG" 
+          node .github/scripts/string-replace.mjs ./npm/package.json "0.0.0-local" "$TAG"
+          cp ./README.md ./npm/README.md
           cd npm
           echo "$TAG" > tag
           npm publish --access=public

@@ -1,4 +1,11 @@
-This is a placeholder file used by npm to generate a symlink against.
+This is a placeholder file required because npm will only create 
+a symlink to a `package.json#bin` entry if the file exists.
 
-It is replaced in a postinstall step with the actual binary 
+This file is replaced in a postinstall step with the actual binary 
 fetched from GitHub releases.
+
+This file has the .exe extension for Windows compatibility because 
+Windows requires file extensions to make files executable. 
+
+Linux and MacOS will be able to run the file as a normal binary 
+regardless of the extension being present.
