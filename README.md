@@ -66,14 +66,14 @@ Pinned to a specific git hash
 
 ```
 origin = git
-specifier = d874396
+version = d874396
 ```
 
 Uses a git branch. Warning this can change
 
 ```
 origin = git
-specifier = main
+version = main
 ```
 
 To use this version execute
