@@ -55,19 +55,23 @@ apvm node_modules dedupe            # Traverses node_modules recursively
 
 Add an `.apvmrc` file to the root of the project
 
+Pinned to a specific version:
+_note: super package doesn't exist so this doesn't work yet_
+
 ```
-# Pinned to a specific version of the super package (todo)
 2.13.2
 ```
 
+Pinned to a specific git hash
+
 ```
-# Pinned to a specific git hash
 origin = git
 specifier = d874396
 ```
 
+Uses a git branch. Warning this can change
+
 ```
-# Uses a git branch. Warning this can change
 origin = git
 specifier = main
 ```
