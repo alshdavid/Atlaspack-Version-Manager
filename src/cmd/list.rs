@@ -16,7 +16,7 @@ pub async fn main(
   config: Config,
   _cmd: ListCommand,
 ) -> anyhow::Result<()> {
-  let active = ActivePackage::new(&config)?;
+  let active = ActivePackage::active_or_global(&config)?;
 
   for entry in fs::read_dir(config.apvm_installs_dir.join("local"))? {
     let entry = entry?;
@@ -26,7 +26,7 @@ pub async fn main(
       &file_name,
       active
         .as_ref()
-        .is_some_and(|a| a.kind == InstallOrigin::Local && a.name == file_name),
+        .is_some_and(|a| a.origin == InstallOrigin::Local && a.name == file_name),
       &format!("({})", link_src.try_to_string()?),
     );
   }
@@ -37,7 +37,7 @@ pub async fn main(
       &file_name,
       active
         .as_ref()
-        .is_some_and(|a| a.kind == InstallOrigin::Super && a.name == file_name),
+        .is_some_and(|a| a.origin == InstallOrigin::Super && a.name == file_name),
       "",
     );
   }
@@ -48,7 +48,7 @@ pub async fn main(
       &file_name,
       active
         .as_ref()
-        .is_some_and(|a| a.kind == InstallOrigin::Git && a.name == file_name),
+        .is_some_and(|a| a.origin == InstallOrigin::Git && a.name == file_name),
       "(git)",
     );
   }

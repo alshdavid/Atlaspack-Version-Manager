@@ -1,5 +1,6 @@
+pub mod debug;
 pub mod env;
-pub mod info;
+pub mod global;
 pub mod install;
 pub mod install_git;
 pub mod install_local;
@@ -7,8 +8,6 @@ pub mod install_super;
 pub mod link;
 pub mod list;
 pub mod proxy;
-pub mod run;
 pub mod uninstall;
-pub mod unload;
 pub mod r#use;
 pub mod version;

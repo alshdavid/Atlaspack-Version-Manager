@@ -10,51 +10,45 @@ use crate::platform::path_ext::PathExt;
 use crate::platform::runtime::resolve_runtime;
 
 #[derive(Debug, Subcommand, Clone)]
-pub enum InfoCommandType {
+pub enum DebugCommandType {
   LinkPath,
   RealPath,
   Resolve { specifier: String },
-  Kind,
 }
 
 #[derive(Debug, Parser)]
-pub struct ResolveCommand {
+pub struct DebugCommand {
   #[clap(subcommand)]
-  pub query: InfoCommandType,
+  pub query: Option<DebugCommandType>,
 }
 
 #[rustfmt::skip]
-pub async fn main(config: Config, cmd: ResolveCommand) -> anyhow::Result<()> {
+pub async fn main(config: Config, cmd: DebugCommand) -> anyhow::Result<()> {
   
   match cmd.query {
-    InfoCommandType::RealPath => {
-      if let Some(active) = ActivePackage::new(&config)? {
-        print!("{}", active.real_path.try_to_string()?);
-      };
+    None => {
+      dbg!(&config);
+      dbg!(&ActivePackage::active_or_global(&config));
       Ok(())
     },
-    InfoCommandType::LinkPath => {
-      if let Some(active) = ActivePackage::new(&config)? {
-        print!("{}", active.link_path.try_to_string()?);
-      };
+    Some(DebugCommandType::RealPath ) => {
+      let active = ActivePackage::try_active_or_global(&config)?;
+      print!("{}", active.static_path_real.try_to_string()?);
       Ok(())
     },
-    InfoCommandType::Kind => {
-      if let Some(active) = ActivePackage::new(&config)? {
-        print!("{}", active.kind);
-      };
+    Some(DebugCommandType::LinkPath ) => {
+      let active = ActivePackage::try_active_or_global(&config)?;
+      print!("{}", active.static_path.try_to_string()?);
       Ok(())
     },
-    InfoCommandType::Resolve{specifier}=> {
+    Some(DebugCommandType::Resolve{specifier}) => {
       let runtime = resolve_runtime("node")?;
-
+      let active = ActivePackage::try_active_or_global(&config)?;
       exec_blocking([&runtime.try_to_string()?, "-e", &format!("console.log(require.resolve('{}'))", specifier)], ExecOptions {
-        cwd: Some(config.apvm_active_dir.join("static")),
+        cwd: Some(active.static_path_real),
         silent: false,
         env: None,
-      })?;
-
-      Ok(())
+      })
     },
   }
 }

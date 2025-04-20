@@ -13,11 +13,11 @@ pub async fn atlaspack_exec(
   config: &Config,
 ) -> anyhow::Result<()> {
   let runtime = resolve_runtime(&config.apvm_runtime)?;
-  let Some(active) = ActivePackage::new(config)? else {
+  let Some(active) = ActivePackage::active_or_global(config)? else {
     return Err(anyhow::anyhow!("No active package selected"));
   };
 
-  let bin_path = match active.kind {
+  let bin_path = match active.origin {
     InstallOrigin::Super => active.static_path.join("cli").join("lib").join("cli.js"),
     InstallOrigin::Git => active
       .static_path
@@ -44,8 +44,8 @@ pub async fn atlaspack_exec(
   #[rustfmt::skip]
   let env = HashMap::from_iter(vec![
     ("APVM_STATIC_PATH".to_string(), active.static_path.try_to_string()?),
-    ("APVM_PATH".to_string(), active.real_path.try_to_string()?),
-    ("APVM_KIND".to_string(), active.kind.to_string()),
+    ("APVM_PATH".to_string(), active.session_path.try_to_string()?),
+    ("APVM_KIND".to_string(), active.origin.to_string()),
   ]);
 
   let (tx, rx) = tokio::sync::oneshot::channel::<anyhow::Result<()>>();
