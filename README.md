@@ -72,6 +72,16 @@ origin = git
 specifier = main
 ```
 
+To use this version execute
+
+```bash
+# Set the version to be the global version
+apvm global
+
+# Set the version to be the shell version (requires advanced setup)
+apvm use
+```
+
 ## Advanced usage
 
 ### CLI
