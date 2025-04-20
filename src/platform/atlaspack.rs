@@ -75,15 +75,11 @@ pub async fn atlaspack_exec(
 }
 
 fn detect_node_modules(config: &Config) -> Option<PathBuf> {
-  let Some(node_modules_bin) = config.exe_path.parent() else {
-    return None;
-  };
+  let node_modules_bin = config.exe_path.parent()?;
   if !node_modules_bin.ends_with(".bin") {
     return None;
   }
-  let Some(node_modules) = node_modules_bin.parent() else {
-    return None;
-  };
+  let node_modules = node_modules_bin.parent()?;
   if !node_modules.ends_with("node_modules") {
     return None;
   }
