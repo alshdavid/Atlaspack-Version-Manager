@@ -8,6 +8,7 @@ pub mod install_super;
 pub mod list;
 pub mod node_modules;
 pub mod proxy;
+pub mod reinstall;
 pub mod uninstall;
 pub mod r#use;
 pub mod version;
