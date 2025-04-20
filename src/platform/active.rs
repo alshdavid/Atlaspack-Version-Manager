@@ -7,10 +7,12 @@ use super::origin::InstallOrigin;
 use super::path_ext::*;
 use crate::config::Config;
 
+#[allow(unused)]
 #[derive(Debug)]
 pub enum ActivePackageKind {
   Session,
   Global,
+  Void,
 }
 
 #[allow(unused)]
@@ -26,6 +28,36 @@ pub struct ActivePackage {
 }
 
 impl ActivePackage {
+  pub fn try_from_specifier(
+    config: &Config,
+    specifier: &String,
+    origin: &InstallOrigin,
+  ) -> anyhow::Result<Self> {
+    let installs = config.apvm_installs_dir.join(format!("{}", origin));
+
+    let name_encoded = name::encode(specifier)?;
+    let session_path = PathBuf::default();
+    let static_path = installs.join(&name_encoded);
+    let static_path_real = installs.join(&name_encoded);
+    let origin = origin.clone();
+
+    let static_path_real = match origin {
+      InstallOrigin::Super => static_path_real,
+      InstallOrigin::Git => static_path_real,
+      InstallOrigin::Local => fs::read_link(&static_path_real)?,
+    };
+
+    Ok(Self {
+      kind: ActivePackageKind::Void,
+      origin,
+      name_encoded,
+      name: specifier.clone(),
+      session_path,
+      static_path,
+      static_path_real,
+    })
+  }
+
   pub fn active_or_global(config: &Config) -> anyhow::Result<Option<Self>> {
     Ok(Some(match ActivePackage::active(config)? {
       Some(active) => active,
@@ -69,6 +101,10 @@ impl ActivePackage {
     }
 
     Self::resolve(&config.apvm_global_dir, ActivePackageKind::Global)
+  }
+
+  pub fn exists(&self) -> anyhow::Result<bool> {
+    Ok(fs::exists(&self.static_path_real)?)
   }
 
   fn resolve(
