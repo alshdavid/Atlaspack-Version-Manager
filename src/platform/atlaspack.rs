@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use super::active::ActivePackage;
 use super::exec::ExecOptions;
@@ -17,22 +18,27 @@ pub async fn atlaspack_exec(
     return Err(anyhow::anyhow!("No active package selected"));
   };
 
-  let bin_path = match active.origin {
-    InstallOrigin::Super => active.static_path.join("cli").join("lib").join("cli.js"),
-    InstallOrigin::Git => active
-      .static_path
-      .join("packages")
-      .join("core")
-      .join("cli")
-      .join("lib")
-      .join("cli.js"),
-    InstallOrigin::Local => active
-      .static_path
-      .join("packages")
-      .join("core")
-      .join("cli")
-      .join("lib")
-      .join("cli.js"),
+  let bin_path = match detect_node_modules(config) {
+    // Use entry point from node_modules if available
+    Some(bin_path) => bin_path,
+    // Otherwise use entry point from currently active Atlaspack
+    None => match active.origin {
+      InstallOrigin::Super => active.static_path.join("cli").join("lib").join("cli.js"),
+      InstallOrigin::Git => active
+        .static_path_real
+        .join("packages")
+        .join("core")
+        .join("cli")
+        .join("lib")
+        .join("cli.js"),
+      InstallOrigin::Local => active
+        .static_path_real
+        .join("packages")
+        .join("core")
+        .join("cli")
+        .join("lib")
+        .join("cli.js"),
+    },
   };
 
   let mut args = Vec::<String>::new();
@@ -66,4 +72,26 @@ pub async fn atlaspack_exec(
 
   rx.await??;
   Ok(())
+}
+
+fn detect_node_modules(config: &Config) -> Option<PathBuf> {
+  let Some(node_modules_bin) = config.exe_path.parent() else {
+    return None;
+  };
+  if !node_modules_bin.ends_with(".bin") {
+    return None;
+  }
+  let Some(node_modules) = node_modules_bin.parent() else {
+    return None;
+  };
+  if !node_modules.ends_with("node_modules") {
+    return None;
+  }
+  Some(
+    node_modules
+      .join("@atlaspack")
+      .join("cli")
+      .join("lib")
+      .join("cli.js"),
+  )
 }

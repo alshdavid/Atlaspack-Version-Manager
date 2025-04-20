@@ -56,13 +56,6 @@ async fn main() -> anyhow::Result<()> {
     return cmd::proxy::main(config).await;
   }
 
-  // Commands to proxy
-  if let Some("atlaspack") = config.argv.first().map(|v| v.as_str()) {
-    let mut config = config;
-    config.argv.remove(0);
-    return cmd::proxy::main(config).await;
-  }
-
   // APVM Commands
   let args = ApvmCommand::parse();
 

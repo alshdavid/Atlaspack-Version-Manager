@@ -33,7 +33,7 @@ pub async fn install_from_git(
   }
 
   println!(
-    "🚀 Fetching https://github.com/atlassian-labs/atlaspack/archive/{}.tar.gz",
+    "Fetching https://github.com/atlassian-labs/atlaspack/archive/{}.tar.gz",
     &branch,
   );
 
@@ -74,12 +74,8 @@ pub async fn install_from_git(
   }
 
   println!("Initializing");
-  exec_blocking(["git", "init"], command_options.clone())?;
-  exec_blocking(["git", "add", "."], command_options.clone())?;
-  exec_blocking(
-    ["git", "commit", "-m", "Initial Commit"],
-    command_options.clone(),
-  )?;
+  // Atlaspack needs a .git folder or the build will fail
+  fs::create_dir_all(inner_temp.path().join(".git"))?;
 
   println!("Installing (yarn)");
   exec_blocking(["yarn", "install"], command_options.clone())?;
