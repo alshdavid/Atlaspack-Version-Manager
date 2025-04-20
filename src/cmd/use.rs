@@ -24,10 +24,21 @@ pub struct UseCommand {
 
 pub async fn main(
   config: Config,
-  cmd: UseCommand,
+  mut cmd: UseCommand,
 ) -> anyhow::Result<()> {
+  // Try use .apvmrc if available
   if cmd.origin.is_none() && cmd.version.is_none() {
-    return use_apvm_rc(config, cmd).await;
+    let Some(apvm_rc) = config.apvm_rc.clone() else {
+      return Err(anyhow::anyhow!("No version specified"));
+    };
+
+    cmd.version = apvm_rc.specifier;
+    cmd.origin = Some(apvm_rc.origin);
+  }
+
+  // Use the default origin if only the version is specified
+  if cmd.origin.is_none() && cmd.version.is_some() {
+    cmd.origin = Some(InstallOrigin::default())
   }
 
   match cmd.origin {
@@ -36,25 +47,6 @@ pub async fn main(
     Some(InstallOrigin::Local) => use_local(config, cmd).await,
     None => use_git(config, cmd).await, // None => use_super(config, cmd).await
   }
-}
-
-async fn use_apvm_rc(
-  config: Config,
-  cmd: UseCommand,
-) -> anyhow::Result<()> {
-  let Some(apvm_rc) = config.apvm_rc.clone() else {
-    return Err(anyhow::anyhow!("No version specified"));
-  };
-
-  Box::pin(main(
-    config,
-    UseCommand {
-      version: apvm_rc.specifier,
-      global: cmd.global,
-      origin: Some(apvm_rc.origin),
-    },
-  ))
-  .await
 }
 
 async fn use_super(
@@ -87,7 +79,7 @@ async fn use_super(
   link::hard_link_or_copy(&config.exe_path, &target_bin.join("atlaspack"))?;
   link::soft_link(&target_dir, &target_static)?;
 
-  println!("Using: {} (git)", version);
+  println!("Using: {} (super)", version);
   Ok(())
 }
 

@@ -4,8 +4,8 @@ use serde::Deserialize;
 #[derive(Default, PartialEq, Eq, Debug, ValueEnum, Clone, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum InstallOrigin {
-  #[default]
   Super,
+  #[default]
   Git,
   Local,
 }
