@@ -14,18 +14,22 @@ pub async fn install_from_git(
   config: Config,
   cmd: InstallCommand,
 ) -> anyhow::Result<()> {
-  let version_safe = name::encode(&cmd.version)?;
-  let branch = cmd.version;
+  let Some(version) = cmd.version else {
+    return Err(anyhow::anyhow!("Version not specified"));
+  };
+  let version_safe = name::encode(&version)?;
+  let branch = version;
 
   let target_temp = TempDir::new(&config.apvm_dir_temp.join(format!("{}.temp", version_safe)));
 
   let target = config.apvm_installs_dir.join("git").join(&version_safe);
 
-  if target.exists() && (cmd.force || branch == "main") {
+  if target.exists() && cmd.force {
     println!("Removing existing");
     fs::remove_dir_all(&target)?;
   } else if !cmd.force && target.exists() {
-    return Err(anyhow::anyhow!("Already installed",));
+    println!("✅ Already installed");
+    return Ok(());
   }
 
   println!(

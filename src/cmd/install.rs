@@ -11,10 +11,10 @@ use crate::platform::origin::InstallOrigin;
 #[derive(Debug, Parser)]
 pub struct InstallCommand {
   /// Target version to install
-  pub version: String,
+  pub version: Option<String>,
 
-  #[arg(short = 'o', long = "origin", default_value = "super")]
-  pub origin: InstallOrigin,
+  #[arg(short = 'o', long = "origin")]
+  pub origin: Option<InstallOrigin>,
 
   #[arg(short = 'a', long = "alias")]
   pub alias: Option<String>,
@@ -36,6 +36,10 @@ pub async fn main(
   config: Config,
   cmd: InstallCommand,
 ) -> anyhow::Result<()> {
+  if cmd.origin.is_none() && cmd.version.is_none() {
+    return use_apvm_rc(config, cmd).await;
+  }
+
   fs::create_dir_all(&config.apvm_installs_dir)?;
   fs::create_dir_all(&config.apvm_dir_temp)?;
   fs::create_dir_all(config.apvm_installs_dir.join("git"))?;
@@ -43,8 +47,28 @@ pub async fn main(
   fs::create_dir_all(config.apvm_installs_dir.join("super"))?;
 
   match cmd.origin {
-    InstallOrigin::Git => install_from_git(config, cmd).await,
-    InstallOrigin::Local => install_from_local(config, cmd).await,
-    InstallOrigin::Super => install_from_super(config, cmd).await,
+    Some(InstallOrigin::Git) => install_from_git(config, cmd).await,
+    Some(InstallOrigin::Local) => install_from_local(config, cmd).await,
+    Some(InstallOrigin::Super) => install_from_super(config, cmd).await,
+    None => install_from_git(config, cmd).await, // None => install_from_super(config, cmd).await
   }
+}
+
+async fn use_apvm_rc(
+  config: Config,
+  cmd: InstallCommand,
+) -> anyhow::Result<()> {
+  let Some(apvm_rc) = config.apvm_rc.clone() else {
+    return Err(anyhow::anyhow!("No version specified"));
+  };
+
+  Box::pin(main(
+    config,
+    InstallCommand {
+      version: apvm_rc.specifier,
+      origin: Some(apvm_rc.origin),
+      ..cmd
+    },
+  ))
+  .await
 }

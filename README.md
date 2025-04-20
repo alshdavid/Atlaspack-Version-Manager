@@ -75,11 +75,17 @@ specifier = main
 To use this version execute
 
 ```bash
+# Install version specified in .apvmrc
+apvm install
+
 # Set the version to be the global version
 apvm global
 
 # Set the version to be the shell version (requires advanced setup)
 apvm use
+
+# Link the version specified in the config into node_modules
+apvm node_modules link
 ```
 
 ## Advanced usage

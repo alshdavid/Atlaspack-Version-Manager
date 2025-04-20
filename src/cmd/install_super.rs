@@ -15,9 +15,11 @@ pub async fn install_from_super(
   cmd: InstallCommand,
 ) -> anyhow::Result<()> {
   let start_time = SystemTime::now();
-
-  let version_safe = name::encode(&cmd.version)?;
-  let specifier = cmd.version;
+  let Some(version) = cmd.version else {
+    return Err(anyhow::anyhow!("Version not specified"));
+  };
+  let version_safe = name::encode(&version)?;
+  let specifier = version;
 
   let target_temp = TempDir::new(&config.apvm_dir_temp.join(format!("{}.temp", version_safe)));
 
@@ -27,7 +29,8 @@ pub async fn install_from_super(
     println!("Removing existing");
     fs::remove_dir_all(&target)?;
   } else if !cmd.force && target.exists() {
-    return Err(anyhow::anyhow!("Already installed",));
+    println!("✅ Already installed");
+    return Ok(());
   }
 
   let url = format!(

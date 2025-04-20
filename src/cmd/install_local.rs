@@ -11,7 +11,10 @@ pub async fn install_from_local(
   config: Config,
   cmd: InstallCommand,
 ) -> anyhow::Result<()> {
-  let original_path = PathBuf::from(cmd.version);
+  let Some(version) = cmd.version else {
+    return Err(anyhow::anyhow!("Version not specified"));
+  };
+  let original_path = PathBuf::from(version);
 
   let alias = match cmd.alias {
     Some(alias) => alias,
@@ -24,7 +27,11 @@ pub async fn install_from_local(
   if cmd.force && fs::exists(&link_path)? {
     fs::remove_file(&link_path)?;
   } else if fs::exists(&link_path)? {
-    return Err(anyhow::anyhow!("Install for {} already exists", alias));
+    println!(
+      "✅ Already Installed local://{}",
+      original_path.try_to_string()?
+    );
+    return Ok(());
   }
 
   if !fs::exists(&original_path)? {

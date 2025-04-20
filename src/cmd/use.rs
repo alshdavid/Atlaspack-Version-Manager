@@ -18,22 +18,30 @@ pub struct UseCommand {
   #[arg(short = 'g', long = "global")]
   pub global: bool,
 
-  #[arg(short = 'o', long = "origin", default_value = "super")]
-  pub origin: InstallOrigin,
+  #[arg(short = 'o', long = "origin")]
+  pub origin: Option<InstallOrigin>,
 }
 
 pub async fn main(
   config: Config,
   cmd: UseCommand,
 ) -> anyhow::Result<()> {
-  if cmd.version.is_some() {
-    return match cmd.origin {
-      InstallOrigin::Super => use_super(config, cmd).await,
-      InstallOrigin::Git => use_git(config, cmd).await,
-      InstallOrigin::Local => use_local(config, cmd).await,
-    };
+  if cmd.origin.is_none() && cmd.version.is_none() {
+    return use_apvm_rc(config, cmd).await;
   }
 
+  match cmd.origin {
+    Some(InstallOrigin::Super) => use_super(config, cmd).await,
+    Some(InstallOrigin::Git) => use_git(config, cmd).await,
+    Some(InstallOrigin::Local) => use_local(config, cmd).await,
+    None => use_git(config, cmd).await, // None => use_super(config, cmd).await
+  }
+}
+
+async fn use_apvm_rc(
+  config: Config,
+  cmd: UseCommand,
+) -> anyhow::Result<()> {
   let Some(apvm_rc) = config.apvm_rc.clone() else {
     return Err(anyhow::anyhow!("No version specified"));
   };
@@ -43,7 +51,7 @@ pub async fn main(
     UseCommand {
       version: apvm_rc.specifier,
       global: cmd.global,
-      origin: apvm_rc.origin,
+      origin: Some(apvm_rc.origin),
     },
   ))
   .await

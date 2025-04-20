@@ -9,8 +9,8 @@ pub struct GlobalCommand {
   /// Target version to use
   pub version: Option<String>,
 
-  #[arg(short = 'o', long = "origin", default_value = "super")]
-  pub origin: InstallOrigin,
+  #[arg(short = 'o', long = "origin")]
+  pub origin: Option<InstallOrigin>,
 }
 
 pub async fn main(
