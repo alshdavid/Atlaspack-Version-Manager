@@ -32,7 +32,7 @@ pub async fn main(
       return Err(anyhow::anyhow!("No version specified"));
     };
 
-    cmd.version = apvm_rc.specifier;
+    cmd.version = apvm_rc.version;
     cmd.origin = Some(apvm_rc.origin);
   }
 

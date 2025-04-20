@@ -9,7 +9,7 @@ use super::origin::InstallOrigin;
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct ApvmRc {
-  pub specifier: Option<String>,
+  pub version: Option<String>,
   pub origin: InstallOrigin,
 }
 
@@ -22,7 +22,7 @@ impl ApvmRc {
         let contents = fs::read_to_string(&config_path)?;
         if !contents.contains("=") && contents.contains(".") {
           return Ok(Some(ApvmRc {
-            specifier: Some(contents.trim().to_string()),
+            version: Some(contents.trim().to_string()),
             origin: InstallOrigin::default(),
           }));
         }
