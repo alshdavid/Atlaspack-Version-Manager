@@ -23,7 +23,7 @@ pub async fn atlaspack_exec(
     Some(bin_path) => bin_path,
     // Otherwise use entry point from currently active Atlaspack
     None => match active.origin {
-      InstallOrigin::Super => active.static_path.join("cli").join("lib").join("cli.js"),
+      InstallOrigin::Npm => active.static_path.join("cli").join("lib").join("cli.js"),
       InstallOrigin::Git => active
         .static_path_real
         .join("packages")

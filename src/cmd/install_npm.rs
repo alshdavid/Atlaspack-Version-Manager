@@ -10,7 +10,7 @@ use crate::platform::constants as c;
 use crate::platform::name;
 use crate::platform::temp_dir::TempDir;
 
-pub async fn install_from_super(
+pub async fn install_from_npm(
   config: Config,
   cmd: InstallCommand,
 ) -> anyhow::Result<()> {
@@ -21,7 +21,7 @@ pub async fn install_from_super(
   let version_safe = name::encode(&version)?;
   let specifier = version;
 
-  let target_temp = TempDir::new(&config.apvm_dir_temp.join(format!("{}.temp", version_safe)));
+  let target_temp = TempDir::new(&config.apvm_dir_temp.join(format!("{version_safe}.temp")));
 
   let target = config.apvm_installs_dir.join("super").join(&version_safe);
 
@@ -39,7 +39,7 @@ pub async fn install_from_super(
     c::TARBALL,
   );
 
-  println!("Downloading: {}", url);
+  println!("Downloading: {url}");
 
   let response = reqwest::get(url).await?;
 

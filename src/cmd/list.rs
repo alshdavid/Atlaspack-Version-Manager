@@ -31,13 +31,13 @@ pub async fn main(
     );
   }
 
-  for entry in fs::read_dir(config.apvm_installs_dir.join("super"))? {
+  for entry in fs::read_dir(config.apvm_installs_dir.join("npm"))? {
     let file_name = name::decode(entry?.file_name().try_to_string()?)?;
     print_name(
       &file_name,
       active
         .as_ref()
-        .is_some_and(|a| a.origin == InstallOrigin::Super && a.name == file_name),
+        .is_some_and(|a| a.origin == InstallOrigin::Npm && a.name == file_name),
       "",
     );
   }
@@ -62,11 +62,8 @@ fn print_name(
   suffix: &str,
 ) {
   if active {
-    println!(
-      "{}{}* {} {}{}{}",
-      color_blue, style_bold, name, suffix, color_reset, style_reset
-    );
+    println!("{color_blue}{style_bold}* {name} {suffix}{color_reset}{style_reset}");
   } else {
-    println!("* {} {}", name, suffix);
+    println!("* {name} {suffix}");
   }
 }

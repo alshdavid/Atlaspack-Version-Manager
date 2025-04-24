@@ -33,7 +33,7 @@ impl ActivePackage {
     specifier: &String,
     origin: &InstallOrigin,
   ) -> anyhow::Result<Self> {
-    let installs = config.apvm_installs_dir.join(format!("{}", origin));
+    let installs = config.apvm_installs_dir.join(format!("{origin}"));
 
     let name_encoded = name::encode(specifier)?;
     let session_path = PathBuf::default();
@@ -42,7 +42,7 @@ impl ActivePackage {
     let origin = origin.clone();
 
     let static_path_real = match origin {
-      InstallOrigin::Super => static_path_real,
+      InstallOrigin::Npm => static_path_real,
       InstallOrigin::Git => static_path_real,
       InstallOrigin::Local => fs::read_link(&static_path_real)?,
     };
@@ -119,7 +119,7 @@ impl ActivePackage {
     let origin = InstallOrigin::try_from(static_path_real.try_parent()?.try_file_name()?)?;
 
     let static_path_real = match origin {
-      InstallOrigin::Super => static_path_real,
+      InstallOrigin::Npm => static_path_real,
       InstallOrigin::Git => static_path_real,
       InstallOrigin::Local => fs::read_link(&static_path_real)?,
     };

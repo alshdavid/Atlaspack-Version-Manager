@@ -18,7 +18,7 @@ A directory is created called `APVM_DIR` which defaults to `$HOME/.local/apvm` w
      /[branch_name_base64]
    /local
      /[local_alias_base64]
-   /super
+   /npm
      /[version_number_base64]
 ```
 

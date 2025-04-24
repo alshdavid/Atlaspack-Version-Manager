@@ -4,7 +4,7 @@ pub mod global;
 pub mod install;
 pub mod install_git;
 pub mod install_local;
-pub mod install_super;
+pub mod install_npm;
 pub mod list;
 pub mod node_modules;
 pub mod node_modules_link;

@@ -4,7 +4,7 @@ use clap::Parser;
 
 use super::install_git::install_from_git;
 use super::install_local::install_from_local;
-use super::install_super::install_from_super;
+use super::install_npm::install_from_npm;
 use crate::config::Config;
 use crate::platform::origin::InstallOrigin;
 
@@ -13,9 +13,11 @@ pub struct InstallCommand {
   /// Target version to install
   pub version: Option<String>,
 
+  // Where to source the Atlaspack from
   #[arg(short = 'o', long = "origin")]
   pub origin: Option<InstallOrigin>,
 
+  // Install the version with an alias
   #[arg(short = 'a', long = "alias")]
   pub alias: Option<String>,
 
@@ -55,12 +57,12 @@ pub async fn main(
   fs::create_dir_all(&config.apvm_dir_temp)?;
   fs::create_dir_all(config.apvm_installs_dir.join("git"))?;
   fs::create_dir_all(config.apvm_installs_dir.join("local"))?;
-  fs::create_dir_all(config.apvm_installs_dir.join("super"))?;
+  fs::create_dir_all(config.apvm_installs_dir.join("npm"))?;
 
   match cmd.origin {
     Some(InstallOrigin::Git) => install_from_git(config, cmd).await,
     Some(InstallOrigin::Local) => install_from_local(config, cmd).await,
-    Some(InstallOrigin::Super) => install_from_super(config, cmd).await,
-    None => install_from_git(config, cmd).await, // None => install_from_super(config, cmd).await
+    Some(InstallOrigin::Npm) => install_from_npm(config, cmd).await,
+    None => install_from_npm(config, cmd).await,
   }
 }

@@ -73,6 +73,7 @@ build:
   @# New-Item -Path "{{out_dir}}" -ItemType SymbolicLink -Value "{{out_dir_link}}"
 
 [unix]
+[no-cd]
 run *ARGS:
   just build
   {{out_dir}}/{{project_name}} {{ARGS}}

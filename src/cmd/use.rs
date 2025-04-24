@@ -42,14 +42,14 @@ pub async fn main(
   }
 
   match cmd.origin {
-    Some(InstallOrigin::Super) => use_super(config, cmd).await,
+    Some(InstallOrigin::Npm) => use_npm(config, cmd).await,
     Some(InstallOrigin::Git) => use_git(config, cmd).await,
     Some(InstallOrigin::Local) => use_local(config, cmd).await,
-    None => use_git(config, cmd).await, // None => use_super(config, cmd).await
+    None => use_npm(config, cmd).await,
   }
 }
 
-async fn use_super(
+async fn use_npm(
   config: Config,
   cmd: UseCommand,
 ) -> anyhow::Result<()> {
@@ -58,7 +58,7 @@ async fn use_super(
   };
   let version_safe = name::encode(version)?;
 
-  let installs_dir = config.apvm_installs_dir.join("super");
+  let installs_dir = config.apvm_installs_dir.join("npm");
   let target_dir = installs_dir.join(&version_safe);
 
   let use_dir = get_use_dir(&config, &cmd)?;
@@ -79,7 +79,7 @@ async fn use_super(
   link::hard_link_or_copy(&config.exe_path, &target_bin.join("atlaspack"))?;
   link::soft_link(&target_dir, &target_static)?;
 
-  println!("Using: {} (super)", version);
+  println!("Using: {version}");
   Ok(())
 }
 
@@ -110,7 +110,7 @@ async fn use_git(
   link::hard_link_or_copy(&config.exe_path, &target_bin.join("atlaspack"))?;
   link::soft_link(&target_dir, &target_static)?;
 
-  println!("Using: {} (git)", version);
+  println!("Using: {version} (git)");
   Ok(())
 }
 

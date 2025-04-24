@@ -20,7 +20,7 @@ pub async fn install_from_git(
   let version_safe = name::encode(&version)?;
   let branch = version;
 
-  let target_temp = TempDir::new(&config.apvm_dir_temp.join(format!("{}.temp", version_safe)));
+  let target_temp = TempDir::new(&config.apvm_dir_temp.join(format!("{version_safe}.temp")));
 
   let target = config.apvm_installs_dir.join("git").join(&version_safe);
 
@@ -69,7 +69,7 @@ pub async fn install_from_git(
   if cmd.skip_build {
     fs::rename(inner_temp.path(), &target)?;
     println!("Skipping build steps");
-    println!("✅ Installed git://atlassian-labs/atlaspack/{}", branch);
+    println!("✅ Installed git://atlassian-labs/atlaspack/{branch}");
     return Ok(());
   }
 
@@ -91,7 +91,7 @@ pub async fn install_from_git(
 
   fs::rename(inner_temp.path(), &target)?;
 
-  println!("✅ Installed git://atlassian-labs/atlaspack/{}", branch);
+  println!("✅ Installed git://atlassian-labs/atlaspack/{branch}");
 
   Ok(())
 }
