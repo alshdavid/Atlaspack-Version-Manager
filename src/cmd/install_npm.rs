@@ -14,7 +14,7 @@ pub async fn install_from_npm(
   _cmd: InstallCommand,
   package: PackageDescriptor,
 ) -> anyhow::Result<()> {
-  let target_temp = TempDir::new(&config.paths.temp.join(&package.version_encoded));
+  let target_temp = TempDir::new(&config.paths.temp)?;
   let target = config.paths.versions_npm.join(&package.version_encoded);
 
   let url = format!(

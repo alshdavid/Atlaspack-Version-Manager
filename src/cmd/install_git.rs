@@ -15,7 +15,7 @@ pub async fn install_from_git(
   cmd: InstallCommand,
   package: PackageDescriptor,
 ) -> anyhow::Result<()> {
-  let target_temp = TempDir::new(&config.paths.temp.join(&package.version_encoded));
+  let target_temp = TempDir::new(&config.paths.temp)?;
   let target = config.paths.versions_git.join(&package.version_encoded);
 
   if target.exists() && cmd.force {

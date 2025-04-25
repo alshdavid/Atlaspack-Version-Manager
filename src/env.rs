@@ -1,8 +1,7 @@
 use std::path::PathBuf;
 
 pub struct Env {
-  pub apvm_session: Option<String>,
-  pub apvm_runtime: String,
+  // pub apvm_runtime: String,
   pub apvm_dir: PathBuf,
 }
 
@@ -13,11 +12,10 @@ impl Env {
         Ok(apvm_dir) => PathBuf::from(apvm_dir),
         Err(_) => apvm_dir_default()?,
       },
-      apvm_runtime: match std::env::var("APVM_RUNTIME") {
-        Ok(apvm_runtime) => apvm_runtime,
-        Err(_) => "node".to_string(),
-      },
-      apvm_session: std::env::var("APVM_SESSION").ok(),
+      // apvm_runtime: match std::env::var("APVM_RUNTIME") {
+      //   Ok(apvm_runtime) => apvm_runtime,
+      //   Err(_) => "node".to_string(),
+      // },
     })
   }
 }

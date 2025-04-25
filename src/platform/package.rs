@@ -18,6 +18,8 @@ pub struct PackageDescriptor {
 }
 
 impl PackageDescriptor {
+  /// Create a PackageDescriptor from a version target.
+  /// This file might not exist
   pub fn parse(
     config: &Config,
     version_target: &VersionTarget,
@@ -39,6 +41,8 @@ impl PackageDescriptor {
     })
   }
 
+  /// Try to figure out the type of package using a file path
+  /// to the package
   pub fn parse_from_dir(
     config: &Config,
     path: &Path,

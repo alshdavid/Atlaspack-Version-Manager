@@ -37,10 +37,11 @@ pub async fn main(
   // Get specifier from CLI or apvm config
   let version = match &cmd.version {
     Some(version) => VersionTarget::try_from(version.as_str())?,
-    None => {
-      // Load from config
-      VersionTarget::try_from("git:main")?
-    }
+    // Load from config
+    None => match &config.active_version {
+      Some(active) => active.package.version_target.clone(),
+      None => return Err(anyhow::anyhow!("No version selected for install")),
+    },
   };
 
   let package = PackageDescriptor::parse(&config, &version)?;

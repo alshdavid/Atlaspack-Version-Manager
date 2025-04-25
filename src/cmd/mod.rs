@@ -7,6 +7,7 @@ pub mod install_npm;
 pub mod list;
 pub mod npm;
 pub mod npm_link;
+pub mod npm_link_npm;
 pub mod proxy;
 pub mod reinstall;
 pub mod uninstall;

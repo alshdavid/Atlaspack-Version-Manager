@@ -39,8 +39,4 @@ impl ActiveVersion {
 
     Ok(None)
   }
-
-  pub fn exists(&self) -> anyhow::Result<bool> {
-    self.package.exists()
-  }
 }
