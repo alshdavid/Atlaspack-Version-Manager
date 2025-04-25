@@ -1,140 +1,81 @@
-// use std::fs;
-// use std::path::Path;
-// use std::path::PathBuf;
+use std::fs;
+use std::path::Path;
+use std::path::PathBuf;
 
-// use super::name;
-// use super::origin::InstallOrigin;
-// use super::path_ext::*;
-// use crate::config::Config;
+use super::name;
+use super::origin::VersionTarget;
+use super::path_ext::*;
+use crate::config::Config;
 
-// #[derive(Debug)]
-// pub enum ActivePackageKind {
-//   Session,
-//   Global,
-// }
+#[allow(unused)]
+#[derive(Debug, Clone, PartialEq)]
+pub struct PackageDescriptor {
+  pub version_target: VersionTarget,
+  pub origin: String,
+  pub version: String,
+  pub version_encoded: String,
+  pub path: PathBuf,
+}
 
-// #[allow(unused)]
-// #[derive(Debug)]
-// pub struct ActivePackage {
-//   pub kind: ActivePackageKind,
-//   pub origin: InstallOrigin,
-//   pub name_encoded: String,
-//   pub name: String,
-//   pub session_path: PathBuf,
-//   pub static_path: PathBuf,
-//   pub static_path_real: PathBuf,
-// }
+impl PackageDescriptor {
+  pub fn parse(
+    config: &Config,
+    version_target: &VersionTarget,
+  ) -> anyhow::Result<Self> {
+    let version = version_target.version();
+    let version_encoded = name::encode(version)?;
+    let path = config
+      .paths
+      .versions
+      .join(version_target.origin())
+      .join(&version_encoded);
 
-// impl ActivePackage {
-//   pub fn from_specifier(
-//     config: &Config,
-//     specifier: &Option<String>,
-//     origin: &Option<InstallOrigin>,
-//   ) -> anyhow::Result<Option<Self>> {
-//     let installs = config
-//       .apvm_installs_dir
-//       .join(format!("{}", origin.unwrap_or_default()));
+    Ok(Self {
+      version_target: version_target.clone(),
+      origin: version_target.origin().to_string(),
+      version: version.to_string(),
+      version_encoded,
+      path,
+    })
+  }
 
-//     let Some(specifier) = specifier else {
-//       return Ok(None);
-//     };
+  pub fn parse_from_dir(
+    config: &Config,
+    path: &Path,
+  ) -> anyhow::Result<Self> {
+    let mut path = path.to_path_buf();
+    if path == config.paths.global {
+      path = fs::read_link(&config.paths.global)?
+    }
+    let name_encoded = path.file_name().try_to_string()?;
+    let name = name::decode(&name_encoded)?;
 
-//     let name_encoded = name::encode(specifier)?;
-//     let
-//     let session_path = target_dir.to_path_buf();
-//     let static_path = target_dir.join("static");
-//     let static_path_real = fs::read_link(&static_path)?;
-//     let name_encoded = static_path_real.try_file_name()?;
-//     let name = name::decode(&name_encoded)?;
-//     let origin = InstallOrigin::try_from(static_path_real.try_parent()?.try_file_name()?)?;
+    let parent = path.try_parent()?;
+    let parent_type = parent.file_name().try_to_string()?;
 
-//     let static_path_real = match origin {
-//       InstallOrigin::Super => static_path_real,
-//       InstallOrigin::Git => static_path_real,
-//       InstallOrigin::Local => fs::read_link(&static_path_real)?,
-//     };
+    PackageDescriptor::parse(
+      config,
+      &VersionTarget::parse(format!("{}:{}", parent_type, name))?,
+    )
+  }
 
-//     Ok(Some(Self {
-//       kind,
-//       origin,
-//       name_encoded,
-//       name,
-//       session_path,
-//       static_path,
-//       static_path_real,
-//     }))
-//   }
+  pub fn path_real(&self) -> anyhow::Result<PathBuf> {
+    match self.version_target {
+      VersionTarget::Npm(_) => Ok(self.path.clone()),
+      VersionTarget::Git(_) => Ok(self.path.clone()),
+      VersionTarget::Local(_) => Ok(fs::read_link(&self.path)?),
+    }
+  }
 
-//   pub fn active_or_global(config: &Config) -> anyhow::Result<Option<Self>> {
-//     Ok(Some(match ActivePackage::active(config)? {
-//       Some(active) => active,
-//       None => match ActivePackage::global(config)? {
-//         Some(active) => active,
-//         None => return Err(anyhow::anyhow!("No active package selected")),
-//       },
-//     }))
-//   }
+  pub fn exists(&self) -> anyhow::Result<bool> {
+    if !fs::exists(&self.path)? {
+      return Ok(false);
+    }
 
-//   pub fn try_active_or_global(config: &Config) -> anyhow::Result<Self> {
-//     Ok(match ActivePackage::active(config)? {
-//       Some(active) => active,
-//       None => match ActivePackage::global(config)? {
-//         Some(active) => active,
-//         None => return Err(anyhow::anyhow!("No active package selected")),
-//       },
-//     })
-//   }
+    if !fs::exists(&self.path_real()?)? {
+      return Ok(false);
+    }
 
-//   pub fn active(config: &Config) -> anyhow::Result<Option<Self>> {
-//     let apvm_active_dir = match &config.apvm_active_dir {
-//       Some(apvm_active_dir) => apvm_active_dir,
-//       None => return Ok(None),
-//     };
-
-//     if !fs::exists(apvm_active_dir)? {
-//       return Ok(None);
-//     }
-
-//     let target_path = apvm_active_dir.join("static");
-//     if !fs::exists(&target_path)? {
-//       return Ok(None);
-//     }
-//     Self::resolve(apvm_active_dir, ActivePackageKind::Session)
-//   }
-
-//   pub fn global(config: &Config) -> anyhow::Result<Option<Self>> {
-//     if !fs::exists(&config.apvm_global_dir)? {
-//       return Ok(None);
-//     }
-
-//     Self::resolve(&config.apvm_global_dir, ActivePackageKind::Global)
-//   }
-
-//   fn resolve(
-//     target_dir: &Path,
-//     kind: ActivePackageKind,
-//   ) -> anyhow::Result<Option<Self>> {
-//     let session_path = target_dir.to_path_buf();
-//     let static_path = target_dir.join("static");
-//     let static_path_real = fs::read_link(&static_path)?;
-//     let name_encoded = static_path_real.try_file_name()?;
-//     let name = name::decode(&name_encoded)?;
-//     let origin = InstallOrigin::try_from(static_path_real.try_parent()?.try_file_name()?)?;
-
-//     let static_path_real = match origin {
-//       InstallOrigin::Super => static_path_real,
-//       InstallOrigin::Git => static_path_real,
-//       InstallOrigin::Local => fs::read_link(&static_path_real)?,
-//     };
-
-//     Ok(Some(Self {
-//       kind,
-//       origin,
-//       name_encoded,
-//       name,
-//       session_path,
-//       static_path,
-//       static_path_real,
-//     }))
-//   }
-// }
+    Ok(true)
+  }
+}

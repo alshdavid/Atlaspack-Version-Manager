@@ -17,7 +17,7 @@ pub async fn main(
 ) -> anyhow::Result<()> {
   let version_safe = name::encode(&cmd.version)?;
 
-  let target = config.apvm_installs_dir.join(version_safe);
+  let target = config.paths.versions.join(version_safe);
 
   if !target.exists() {
     return Err(anyhow::anyhow!("Not installed",));

@@ -1,25 +1,19 @@
 use std::fs;
+use std::time::SystemTime;
 
 use clap::Parser;
 
-use super::install_git::install_from_git;
 use super::install_local::install_from_local;
-use super::install_npm::install_from_npm;
+use crate::cmd::install_git::install_from_git;
+use crate::cmd::install_npm::install_from_npm;
 use crate::config::Config;
-use crate::platform::origin::InstallOrigin;
+use crate::platform::origin::VersionTarget;
+use crate::platform::package::PackageDescriptor;
 
 #[derive(Debug, Parser)]
 pub struct InstallCommand {
   /// Target version to install
   pub version: Option<String>,
-
-  // Where to source the Atlaspack from
-  #[arg(short = 'o', long = "origin")]
-  pub origin: Option<InstallOrigin>,
-
-  // Install the version with an alias
-  #[arg(short = 'a', long = "alias")]
-  pub alias: Option<String>,
 
   /// Replace an existing version if already installed
   #[arg(short = 'f', long = "force")]
@@ -36,33 +30,46 @@ pub struct InstallCommand {
 
 pub async fn main(
   config: Config,
-  mut cmd: InstallCommand,
+  cmd: InstallCommand,
 ) -> anyhow::Result<()> {
-  // Try use .apvmrc if available
-  if cmd.origin.is_none() && cmd.version.is_none() {
-    let Some(apvm_rc) = config.apvm_rc.clone() else {
-      return Err(anyhow::anyhow!("No version specified"));
-    };
+  let start_time = SystemTime::now();
 
-    cmd.version = apvm_rc.version;
-    cmd.origin = Some(apvm_rc.origin);
+  // Get specifier from CLI or apvm config
+  let version = match &cmd.version {
+    Some(version) => VersionTarget::try_from(version.as_str())?,
+    None => {
+      // Load from config
+      VersionTarget::try_from("git:main")?
+    }
+  };
+
+  let package = PackageDescriptor::parse(&config, &version)?;
+  let exists = package.exists()?;
+
+  if exists && !cmd.force {
+    println!("✅ Already installed");
+    return Ok(());
   }
 
-  // Use the default origin if only the version is specified
-  if cmd.origin.is_none() && cmd.version.is_some() {
-    cmd.origin = Some(InstallOrigin::default())
+  if exists {
+    println!("Removing Existing");
+    fs::remove_dir_all(&package.path)?;
   }
 
-  fs::create_dir_all(&config.apvm_installs_dir)?;
-  fs::create_dir_all(&config.apvm_dir_temp)?;
-  fs::create_dir_all(config.apvm_installs_dir.join("git"))?;
-  fs::create_dir_all(config.apvm_installs_dir.join("local"))?;
-  fs::create_dir_all(config.apvm_installs_dir.join("npm"))?;
+  // dbg!(&config);
+  // dbg!(&cmd);
+  // dbg!(&package);
 
-  match cmd.origin {
-    Some(InstallOrigin::Git) => install_from_git(config, cmd).await,
-    Some(InstallOrigin::Local) => install_from_local(config, cmd).await,
-    Some(InstallOrigin::Npm) => install_from_npm(config, cmd).await,
-    None => install_from_npm(config, cmd).await,
-  }
+  match &version {
+    VersionTarget::Npm(_) => install_from_npm(config, cmd, package).await?,
+    VersionTarget::Git(_) => install_from_git(config, cmd, package).await?,
+    VersionTarget::Local(_) => install_from_local(config, cmd, package).await?,
+  };
+
+  println!(
+    "✅ Installed in {:.2?} ({})",
+    start_time.elapsed()?,
+    version
+  );
+  Ok(())
 }

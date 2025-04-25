@@ -1,5 +1,4 @@
 use std::fs;
-use std::time::SystemTime;
 
 use flate2::read::GzDecoder;
 use tar::Archive;
@@ -7,30 +6,25 @@ use tar::Archive;
 use super::install::InstallCommand;
 use crate::config::Config;
 use crate::platform::constants as c;
-use crate::platform::name;
+use crate::platform::package::PackageDescriptor;
 use crate::platform::temp_dir::TempDir;
 
 pub async fn install_from_npm(
   config: Config,
-  cmd: InstallCommand,
+  _cmd: InstallCommand,
+  package: PackageDescriptor,
 ) -> anyhow::Result<()> {
-  let start_time = SystemTime::now();
-
-  let Some(version) = cmd.version else {
-    panic!();
-  };
-
-  let version_safe = name::encode(&version)?;
-  let target_temp = TempDir::new(&config.apvm_dir_temp.join(format!("{version_safe}.temp")));
-  let target = config.apvm_installs_dir.join("npm").join(&version_safe);
+  let target_temp = TempDir::new(&config.paths.temp.join(&package.version_encoded));
+  let target = config.paths.versions_npm.join(&package.version_encoded);
 
   let url = format!(
     "https://github.com/alshdavid-forks/atlaspack/releases/download/{}/{}",
-    version,
+    package.version,
     c::TARBALL
   );
-  let response = reqwest::get(&url).await?;
 
+  println!("Fetching");
+  let response = reqwest::get(&url).await?;
   if response.status() != 200 {
     return Err(anyhow::anyhow!("Unable to fetch version"));
   }
@@ -49,12 +43,6 @@ pub async fn install_from_npm(
   };
 
   fs::rename(inner_temp.path(), &target)?;
-
-  println!(
-    "✅ Installed in {:.2?} ({})",
-    start_time.elapsed()?,
-    version
-  );
 
   Ok(())
 }

@@ -3,11 +3,8 @@ use std::fs;
 use clap::Parser;
 
 use crate::config::Config;
-use crate::platform::active::ActivePackage;
 use crate::platform::colors::*;
-use crate::platform::name;
-use crate::platform::origin::InstallOrigin;
-use crate::platform::path_ext::*;
+use crate::platform::package::PackageDescriptor;
 
 #[derive(Debug, Parser)]
 pub struct ListCommand {}
@@ -16,40 +13,45 @@ pub async fn main(
   config: Config,
   _cmd: ListCommand,
 ) -> anyhow::Result<()> {
-  let active = ActivePackage::active_or_global(&config)?;
+  for entry in fs::read_dir(&config.paths.versions_npm)? {
+    let entry = entry?.path();
+    let package = PackageDescriptor::parse_from_dir(&config, &entry)?;
 
-  for entry in fs::read_dir(config.apvm_installs_dir.join("local"))? {
-    let entry = entry?;
-    let file_name = name::decode(entry.file_name().try_to_string()?)?;
-    let link_src = fs::read_link(entry.path())?;
     print_name(
-      &file_name,
-      active
+      &package.version,
+      config
+        .active_version
         .as_ref()
-        .is_some_and(|a| a.origin == InstallOrigin::Local && a.name == file_name),
-      &format!("({})", link_src.try_to_string()?),
-    );
-  }
-
-  for entry in fs::read_dir(config.apvm_installs_dir.join("npm"))? {
-    let file_name = name::decode(entry?.file_name().try_to_string()?)?;
-    print_name(
-      &file_name,
-      active
-        .as_ref()
-        .is_some_and(|a| a.origin == InstallOrigin::Npm && a.name == file_name),
+        .is_some_and(|v| v.package == package),
       "",
     );
   }
 
-  for entry in fs::read_dir(config.apvm_installs_dir.join("git"))? {
-    let file_name = name::decode(entry?.file_name().try_to_string()?)?;
+  for entry in fs::read_dir(&config.paths.versions_local)? {
+    let entry = entry?.path();
+    let package = PackageDescriptor::parse_from_dir(&config, &entry)?;
+
     print_name(
-      &file_name,
-      active
+      &package.version.to_string(),
+      config
+        .active_version
         .as_ref()
-        .is_some_and(|a| a.origin == InstallOrigin::Git && a.name == file_name),
-      "(git)",
+        .is_some_and(|v| v.package == package),
+      "(local) ",
+    );
+  }
+
+  for entry in fs::read_dir(&config.paths.versions_git)? {
+    let entry = entry?.path();
+    let package = PackageDescriptor::parse_from_dir(&config, &entry)?;
+
+    print_name(
+      &package.version,
+      config
+        .active_version
+        .as_ref()
+        .is_some_and(|v| v.package == package),
+      "(git) ",
     );
   }
 
@@ -59,11 +61,11 @@ pub async fn main(
 fn print_name(
   name: &str,
   active: bool,
-  suffix: &str,
+  prefix: &str,
 ) {
   if active {
-    println!("{color_blue}{style_bold}* {name} {suffix}{color_reset}{style_reset}");
+    println!("{color_blue}{style_bold}* {prefix}{name}{color_reset}{style_reset}");
   } else {
-    println!("* {name} {suffix}");
+    println!("* {prefix}{name}");
   }
 }

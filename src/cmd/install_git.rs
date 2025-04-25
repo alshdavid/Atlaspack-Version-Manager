@@ -7,22 +7,16 @@ use super::install::InstallCommand;
 use crate::config::Config;
 use crate::platform::exec::ExecOptions;
 use crate::platform::exec::exec_blocking;
-use crate::platform::name;
+use crate::platform::package::PackageDescriptor;
 use crate::platform::temp_dir::TempDir;
 
 pub async fn install_from_git(
   config: Config,
   cmd: InstallCommand,
+  package: PackageDescriptor,
 ) -> anyhow::Result<()> {
-  let Some(version) = cmd.version else {
-    return Err(anyhow::anyhow!("Version not specified"));
-  };
-  let version_safe = name::encode(&version)?;
-  let branch = version;
-
-  let target_temp = TempDir::new(&config.apvm_dir_temp.join(format!("{version_safe}.temp")));
-
-  let target = config.apvm_installs_dir.join("git").join(&version_safe);
+  let target_temp = TempDir::new(&config.paths.temp.join(&package.version_encoded));
+  let target = config.paths.versions_git.join(&package.version_encoded);
 
   if target.exists() && cmd.force {
     println!("Removing existing");
@@ -32,19 +26,15 @@ pub async fn install_from_git(
     return Ok(());
   }
 
-  println!(
-    "Fetching https://github.com/atlassian-labs/atlaspack/archive/{}.tar.gz",
-    &branch,
+  let url = format!(
+    "https://github.com/atlassian-labs/atlaspack/archive/{}.tar.gz",
+    &package.version
   );
 
-  let response = reqwest::get(format!(
-    "https://github.com/atlassian-labs/atlaspack/archive/{}.tar.gz",
-    &branch,
-  ))
-  .await?;
-
+  println!("Fetching {}", &url);
+  let response = reqwest::get(&url).await?;
   if response.status() == 404 {
-    return Err(anyhow::anyhow!("Version '{}' not found", &branch));
+    return Err(anyhow::anyhow!("Version '{}' not found", &package.version));
   }
 
   println!("Downloading");
@@ -69,7 +59,6 @@ pub async fn install_from_git(
   if cmd.skip_build {
     fs::rename(inner_temp.path(), &target)?;
     println!("Skipping build steps");
-    println!("✅ Installed git://atlassian-labs/atlaspack/{branch}");
     return Ok(());
   }
 
@@ -90,8 +79,6 @@ pub async fn install_from_git(
   exec_blocking(["yarn", "build-ts"], command_options.clone())?;
 
   fs::rename(inner_temp.path(), &target)?;
-
-  println!("✅ Installed git://atlassian-labs/atlaspack/{branch}");
 
   Ok(())
 }

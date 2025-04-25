@@ -1,13 +1,13 @@
 use clap::Parser;
 use clap::Subcommand;
 
-use super::node_modules_link::NodeModulesLinkCommand;
+use super::npm_link::NpmLinkCommand;
 use crate::config::Config;
 
 #[derive(Debug, Subcommand, Clone)]
-pub enum NodeModulesCommandType {
+pub enum NpmCommandType {
   /// Link a specified version of Atlaspack into node_modules
-  Link(NodeModulesLinkCommand),
+  Link(NpmLinkCommand),
   /// Scans node_modules recursively for all instances of Atlaspack
   Scan,
   /// Traverse node_modules recursively and ensure only one version of Atlaspack is installed
@@ -15,20 +15,18 @@ pub enum NodeModulesCommandType {
 }
 
 #[derive(Debug, Parser)]
-pub struct NodeModulesCommand {
+pub struct NpmCommand {
   #[clap(subcommand)]
-  pub command: NodeModulesCommandType,
+  pub command: NpmCommandType,
 }
 
 pub async fn main(
   config: Config,
-  cmd: NodeModulesCommand,
+  cmd: NpmCommand,
 ) -> anyhow::Result<()> {
   match cmd.command {
-    NodeModulesCommandType::Link(cmd) => {
-      super::node_modules_link::node_modules_link(config, cmd).await
-    }
-    NodeModulesCommandType::Scan => todo!(),
-    NodeModulesCommandType::Dedupe => todo!(),
+    NpmCommandType::Link(cmd) => super::npm_link::npm_link(config, cmd).await,
+    NpmCommandType::Scan => todo!(),
+    NpmCommandType::Dedupe => todo!(),
   }
 }

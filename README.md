@@ -1,136 +1,107 @@
 # 📚 Atlaspack Version Manager 📚
 
+Version manager and installer for Atlaspack. This project allows you to:
+
 - Install Atlaspack versions
+  - Npm version
   - Git Branch Name (will compile, requires Rust, Yarn)
   - Git Commit Hash (will compile, requires Rust, Yarn)
   - Local Atlaspack sources
-  - ~Super Package~ (todo maybe?)
-- Link Version Into Current Project
-- Run Commands with Specific Version of Atlaspack
+- Link version into `node_modules`
+- Run commands against specific version of Atlaspack
 
 ## Installation
 
 ```bash
-# Rerun this to update CLI
+# Install globally
 npm install -g @atlaspack/apvm
+
+# Install into current project
+npm install --save-dev @atlaspack/apvm
+yarn add -D @atlaspack/apvm
 ```
 
-## Basic usage
+## Usage
 
 ### CLI
 
 ```bash
-# Install Atlaspack from atlassian-labs/atlaspack
-# Versions obtained from git will build first
-apvm install -o git main          # main branch
-apvm install -o git my-branch     # by branch name
-apvm install -o git d874396       # by git hash
+# Install a version of Atlaspack from npm
+apvm install 2.14.0
+apvm install 2.15.0
 
-apvm reinstall -o git main        # redownload and rebuild main branch
+# Set the system default version of Atlaspack
+apvm default 2.15.0
 
-apvm global -o git main           # Set the global version to be main
+# Ignore the .apvmrc or package.json#atlaspack.version
+# apvm override 2.14.0
 
-echo "console.log(42)" > index.js
-apvm atlaspack build ./index.js   # Run a CLI command using active Atlaspack
-```
+# Link into node_modules the version specified in the project config or default
+apvm npm link
 
-### Link into node_modules
+# Link into node_modules (overriding project config)
+apvm npm link 2.14.0
+apvm npm link 2.15.0
 
-You can link the `apvm` managed Atlaspack version into `node_modules`. It does this by shimming the Atlaspack packages in node_modules to point to the `apvm` managed version.
+# Link into node_modules with backwards compatibility for @atlaspack/* packages
+apvm npm link --legacy 2.15.0
 
-```bash
-apvm node_modules link -o git main  # Link a version into node_modules
-                                    # Does not follow shell/global version
-                                    # so this must be rerun on changes
+# Run Atlaspack commands using the current or default version
+apvm atlaspack build
+apvm atlaspack --version
 
-apvm node_modules scan              # Scans node_modules recursively for
-                                    # all instances of Atlaspack
+# Also works directly with "atlaspack" command
+atlaspack build
+atlaspack --version
 
-apvm node_modules dedupe            # Traverses node_modules recursively
-                                    # and ensures only one version of
-                                    # Atlaspack is installed
+# Npm project flow
+npm init -y
+npm install @atlassian/apvm
+  #> npx apvm npm postinstall
+
+npx apvm atlaspack --version
+npx atlaspack --version
+
+# Npm helper commands
+apvm npm scan     # Scans node_modules recursively for
+                  # all instances of Atlaspack
+
+apvm npm dedupe   # Traverses node_modules recursively
+                  # and ensures only one version of
+                  # Atlaspack is installed
 ```
 
 ### Config
 
-Add an `.apvmrc` file to the root of the project
-
-Pinned to a specific version:
-_note: super package doesn't exist so this doesn't work yet_
-
+Config can be specified in a `package.json` or `.apvmrc`
+```json5
+// package.json
+{
+  "atlaspack": {
+    "version": "2.15.0"
+  }
+}
 ```
-2.13.2
-```
-
-Pinned to a specific git hash
-
-```
-origin = git
-version = d874396
+```yaml
+# .apvmrc
+2.15.0
 ```
 
-Uses a git branch. Warning this can change
+### Install a version from git
 
-```
-origin = git
-version = main
-```
-
-To use this version execute
+Versions obtained from git will build after being fetched. This takes a while 🙏
 
 ```bash
-# Install version specified in .apvmrc
-apvm install
-
-# Set the version to be the global version
-apvm global
-
-# Set the version to be the shell version (requires advanced setup)
-apvm use
-
-# Link the version specified in the config into node_modules
-apvm node_modules link
+apvm install git:main
+apvm install git:my-branch
+apvm install git:1fb73643c
 ```
 
-## Advanced usage
-
-### CLI
-
-```bash
-# Run this to enable per-shell/per-directory versions
-eval "$(apvm env)"
-
-# Install Atlaspack from atlassian-labs/atlaspack
-# Versions obtained from git will build first
-apvm install -o git main          # main branch
-apvm install -o git my-branch     # branch name
-apvm install -o git d874396       # git hash
-
-apvm global -o git main           # Set the global version to be "main"
-apvm use -o git my-branch         # Set the shell version to be "my-branch"
-
-apvm atlaspack --version          # Run a CLI command using active Atlaspack
-atlaspack --version               # Run a CLI command using active Atlaspack
-```
-
-### Use as a development aid
+### Register a locally installed git repo
 
 ```bash
 # Register your local Atlaspack sources
-apvm install -o local "$HOME/atlaspack"
-
-# Set the local copy to be the global default
-apvm global -o local
-
-# Or set the local copy to be used in the shell
-apvm use -o local
-
-# Run commands using local copy
-apvm atlaspack --version
-atlaspack --version
-
-# Link into node_modules
-apvm node_modules link -o local
+apvm install local:/Users/username/atlaspack
 ```
 
 ## Installation (Binary)
@@ -150,19 +121,3 @@ curl -L https://github.com/alshdavid/atlaspack-version-manager/releases/download
 curl -L https://github.com/alshdavid/atlaspack-version-manager/releases/download/latest/apvm-linux-amd64.tar.xz | tar -xJvf - -C .
 ./apvm --help
 ```
-
-## Notes
-
-#### Building after fetching
-
-Versions obtained from git will build after being fetched. This takes a while 🙏
-
-Distributing a prebuilt "super" package is being discussed which can resolve the install times
-
-#### Eval must be run first
-
-Eval must be run before running any commands or it won't work
-
-#### Bash and Zsh supported
-
-Fish and Windows users beware

@@ -1,33 +1,86 @@
 use std::fs;
 use std::path::Path;
+use std::path::PathBuf;
 
-use serde::Deserialize;
-use toml;
+use json::JsonValue;
 
-use super::origin::InstallOrigin;
+use super::origin::VersionTarget;
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[allow(unused)]
+#[derive(Clone, Debug)]
 pub struct ApvmRc {
-  pub version: Option<String>,
-  pub origin: InstallOrigin,
+  pub path: PathBuf,
+  pub version_target: VersionTarget,
 }
 
 impl ApvmRc {
-  pub fn scan(pwd: &Path) -> anyhow::Result<Option<Self>> {
+  pub fn detect(pwd: &Path) -> anyhow::Result<Option<Self>> {
+    if let Some(apvmrc) = Self::detect_apvmrc(pwd)? {
+      return Ok(Some(apvmrc));
+    };
+
+    if let Some(apvmrc) = Self::detect_package_json(pwd)? {
+      return Ok(Some(apvmrc));
+    };
+
+    Ok(None)
+  }
+
+  /// Scan and parse ".apvmrc"
+  pub fn detect_apvmrc(pwd: &Path) -> anyhow::Result<Option<Self>> {
     let mut current = pwd.to_path_buf();
+
     loop {
       let config_path = current.join(".apvmrc");
       if fs::exists(&config_path)? {
         let contents = fs::read_to_string(&config_path)?;
-        if !contents.contains("=") && contents.contains(".") {
-          return Ok(Some(ApvmRc {
-            version: Some(contents.trim().to_string()),
-            origin: InstallOrigin::default(),
+        for line in contents.lines() {
+          if line.starts_with("#") {
+            continue;
+          }
+          return Ok(Some(Self {
+            path: config_path,
+            version_target: VersionTarget::parse(line.trim())?,
           }));
         }
-        return Ok(Some(toml::from_str::<ApvmRc>(&contents)?));
+        todo!();
       }
+      let Some(next) = current.parent() else {
+        break;
+      };
+      current = next.to_path_buf();
+    }
+
+    Ok(None)
+  }
+
+  /// Scan and parse "package.json#atlaspack.version"
+  pub fn detect_package_json(pwd: &Path) -> anyhow::Result<Option<Self>> {
+    let mut current = pwd.to_path_buf();
+
+    loop {
+      let config_path = current.join("package.json");
+      if fs::exists(&config_path)? {
+        let contents = fs::read_to_string(&config_path)?;
+        let JsonValue::Object(package_json) = json::parse(&contents)? else {
+          continue;
+        };
+        let Some(JsonValue::Object(atlaspack)) = package_json.get("atlaspack") else {
+          continue;
+        };
+
+        let specifier = match atlaspack.get("version") {
+          Some(JsonValue::String(specifier)) => specifier.clone(),
+          Some(JsonValue::Short(specifier)) => specifier.to_string(),
+          _ => continue,
+        };
+
+        return Ok(Some(Self {
+          path: config_path,
+          version_target: VersionTarget::parse(&specifier)?,
+        }));
+      }
+
       let Some(next) = current.parent() else {
         break;
       };

@@ -27,6 +27,15 @@ impl OsStringExt for &OsStr {
   }
 }
 
+impl OsStringExt for Option<&OsStr> {
+  fn try_to_string(self) -> anyhow::Result<String> {
+    match self {
+      Some(name) => Ok(name.try_to_string()?),
+      None => Err(anyhow::anyhow!("Unable to convert OsString to String")),
+    }
+  }
+}
+
 pub trait PathExt {
   fn try_parent(&self) -> anyhow::Result<&Path>;
   fn try_file_name(&self) -> anyhow::Result<String>;

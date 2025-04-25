@@ -1,4 +1,4 @@
-#![deny(unused_crate_dependencies)]
+// #![deny(unused_crate_dependencies)]
 
 mod cmd;
 mod config;
@@ -13,23 +13,18 @@ use env::Env;
 
 #[derive(Debug, Subcommand)]
 pub enum ApvmCommandType {
-  /// Print environment variables for apvm
-  Env(cmd::env::EnvCommand),
-  /// Set the global version of Atlaspack to use
-  Global(cmd::global::GlobalCommand),
+  /// Set the default version of Atlaspack
+  Default(cmd::default::DefaultCommand),
   /// Install a version of Atlaspack
   Install(cmd::install::InstallCommand),
-  /// Link Atlaspack into node_modules
-  #[command(name = "node_modules")]
-  NodeModules(cmd::node_modules::NodeModulesCommand),
+  /// Helpers to work with node_modules
+  Npm(cmd::npm::NpmCommand),
   /// List installed versions of Atlaspack
   List(cmd::list::ListCommand),
   /// Reinstall a previously installed version of Atlaspack
   Reinstall(cmd::install::InstallCommand),
   /// Uninstall a previously installed version of Atlaspack
   Uninstall(cmd::uninstall::UninstallCommand),
-  /// Use an installed version of Atlaspack
-  Use(cmd::r#use::UseCommand),
   /// Version information
   Version,
   /// Run command with specified version of atlaspack
@@ -51,7 +46,7 @@ async fn main() -> anyhow::Result<()> {
   let env = Env::parse()?;
   let config = config::Config::new(&env)?;
 
-  // If the executable is called atlaspack then only proxy
+  // If the executable is called "atlaspack" then only proxy
   if &config.exe_stem == "atlaspack" {
     return cmd::proxy::main(config).await;
   }
@@ -69,14 +64,12 @@ async fn main() -> anyhow::Result<()> {
   match args.command {
     ApvmCommandType::Install(cmd) => cmd::install::main(config, cmd).await,
     ApvmCommandType::Reinstall(cmd) => cmd::reinstall::main(config, cmd).await,
-    ApvmCommandType::Global(cmd) => cmd::global::main(config, cmd).await,
-    ApvmCommandType::Use(cmd) => cmd::r#use::main(config, cmd).await,
     ApvmCommandType::List(cmd) => cmd::list::main(config, cmd).await,
-    ApvmCommandType::NodeModules(cmd) => cmd::node_modules::main(config, cmd).await,
     ApvmCommandType::Uninstall(cmd) => cmd::uninstall::main(config, cmd).await,
-    ApvmCommandType::Env(cmd) => cmd::env::main(config, cmd).await,
     ApvmCommandType::Version => cmd::version::main(config).await,
     ApvmCommandType::Debug(cmd) => cmd::debug::main(config, cmd).await,
-    ApvmCommandType::Atlaspack => panic!(),
+    ApvmCommandType::Default(cmd) => cmd::default::main(config, cmd).await,
+    ApvmCommandType::Npm(cmd) => cmd::npm::main(config, cmd).await,
+    ApvmCommandType::Atlaspack => unreachable!(),
   }
 }
