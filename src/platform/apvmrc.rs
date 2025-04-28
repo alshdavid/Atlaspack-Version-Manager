@@ -59,26 +59,30 @@ impl ApvmRc {
     let mut current = pwd.to_path_buf();
 
     loop {
-      let config_path = current.join("package.json");
-      if fs::exists(&config_path)? {
-        let contents = fs::read_to_string(&config_path)?;
-        let JsonValue::Object(package_json) = json::parse(&contents)? else {
-          continue;
-        };
-        let Some(JsonValue::Object(atlaspack)) = package_json.get("atlaspack") else {
-          continue;
-        };
+      'block: {
+        let config_path = current.join("package.json");
 
-        let specifier = match atlaspack.get("version") {
-          Some(JsonValue::String(specifier)) => specifier.clone(),
-          Some(JsonValue::Short(specifier)) => specifier.to_string(),
-          _ => continue,
-        };
+        if fs::exists(&config_path)? {
+          let contents = fs::read_to_string(&config_path)?;
+          let JsonValue::Object(package_json) = json::parse(&contents)? else {
+            break 'block;
+          };
 
-        return Ok(Some(Self {
-          path: config_path,
-          version_target: VersionTarget::parse(&specifier)?,
-        }));
+          let Some(JsonValue::Object(atlaspack)) = package_json.get("atlaspack") else {
+            break 'block;
+          };
+
+          let specifier = match atlaspack.get("version") {
+            Some(JsonValue::String(specifier)) => specifier.clone(),
+            Some(JsonValue::Short(specifier)) => specifier.to_string(),
+            _ => break 'block,
+          };
+
+          return Ok(Some(Self {
+            path: config_path,
+            version_target: VersionTarget::parse(&specifier)?,
+          }));
+        }
       }
 
       let Some(next) = current.parent() else {

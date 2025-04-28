@@ -4,6 +4,7 @@ mod cmd;
 mod config;
 mod env;
 mod platform;
+mod log;
 
 use std::path::PathBuf;
 
@@ -39,10 +40,13 @@ pub struct ApvmCommand {
   pub command: ApvmCommandType,
   #[arg(env = "APVM_DIR")]
   pub apvm_dir: Option<PathBuf>,
+  #[arg(env = "RUST_LOG")]
+  pub _rust_log: Option<log::Level>,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+  env_logger::init();
   let env = Env::parse()?;
   let config = config::Config::new(&env)?;
 

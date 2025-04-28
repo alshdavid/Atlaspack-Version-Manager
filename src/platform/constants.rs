@@ -1,17 +1,11 @@
-#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-pub static TARBALL: &str = "atlaspack-darwin-arm64.tar.gz";
-
-#[cfg(all(target_os = "macos", target_arch = "x86_64"))]
-pub static TARBALL: &str = "atlaspack-darwin-amd64.tar.gz";
-
-#[cfg(all(target_os = "linux", target_arch = "aarch64"))]
-pub static TARBALL: &str = "atlaspack-linux-arm64.tar.gz";
-
-#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-pub static TARBALL: &str = "atlaspack-linux-amd64.tar.gz";
-
-#[cfg(all(target_os = "windows", target_arch = "aarch64"))]
-pub static TARBALL: &str = "atlaspack-windows-arm64.tar.gz";
-
-#[cfg(all(target_os = "windows", target_arch = "x86_64"))]
-pub static TARBALL: &str = "atlaspack-windows-amd64.tar.gz";
+/*
+API_URL/:tag
+API_URL/:version
+API_URL/
+{
+  "dist": {
+    "tarball": "*.tgz"
+  }
+}
+*/
+pub static API_URL: &str = "https://registry.npmjs.org/@atlaspack/super";

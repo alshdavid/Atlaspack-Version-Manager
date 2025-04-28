@@ -1,6 +1,7 @@
 use std::fs;
 
 use flate2::read::GzDecoder;
+use serde::Deserialize;
 use tar::Archive;
 
 use super::install::InstallCommand;
@@ -8,6 +9,16 @@ use crate::config::Config;
 use crate::platform::constants as c;
 use crate::platform::package::PackageDescriptor;
 use crate::platform::temp_dir::TempDir;
+
+#[derive(Debug, Deserialize)]
+struct NpmApiResponse {
+  dist: NpmApiResponseDist
+}
+
+#[derive(Debug, Deserialize)]
+struct NpmApiResponseDist {
+  tarball: String
+}
 
 pub async fn install_from_npm(
   config: Config,
@@ -18,18 +29,29 @@ pub async fn install_from_npm(
   let target = config.paths.versions_npm.join(&package.version_encoded);
 
   let url = format!(
-    "https://github.com/alshdavid-forks/atlaspack/releases/download/{}/{}",
+    "{}/{}",
+    c::API_URL,
     package.version,
-    c::TARBALL
   );
 
-  println!("Fetching");
+  println!("{}", url);
+
+  println!("Resolving");
   let response = reqwest::get(&url).await?;
   if response.status() != 200 {
-    return Err(anyhow::anyhow!("Unable to fetch version"));
+    return Err(anyhow::anyhow!("Unable to resolve version {}", package.version));
   }
 
+  let bytes = response.bytes().await?.to_vec();
+  let data = serde_json::from_slice::<NpmApiResponse>(&bytes)?;
+  let tarball_url = data.dist.tarball;
+
   println!("Downloading");
+  let response = reqwest::get(&tarball_url).await?;
+  if response.status() != 200 {
+    return Err(anyhow::anyhow!("Unable to download version {}", package.version));
+  }
+
   let bytes = response.bytes().await?.to_vec();
 
   println!("Extracting");

@@ -9,10 +9,6 @@ use crate::platform::package::PackageDescriptor;
 pub struct NpmLinkCommand {
   /// Target version to link
   pub version: Option<String>,
-
-  /// Link with support for @atlaspack/* packages
-  #[arg(short = 'i', long = "install")]
-  pub legacy: bool,
 }
 
 pub async fn npm_link(
@@ -42,6 +38,7 @@ pub async fn npm_link(
     VersionTarget::Local(_) => npm_link_local(config, cmd, package).await?,
   }
 
+  println!("✅ Link completed");
   Ok(())
 }
 
