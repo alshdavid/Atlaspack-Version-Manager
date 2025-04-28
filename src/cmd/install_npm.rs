@@ -12,12 +12,12 @@ use crate::platform::temp_dir::TempDir;
 
 #[derive(Debug, Deserialize)]
 struct NpmApiResponse {
-  dist: NpmApiResponseDist
+  dist: NpmApiResponseDist,
 }
 
 #[derive(Debug, Deserialize)]
 struct NpmApiResponseDist {
-  tarball: String
+  tarball: String,
 }
 
 pub async fn install_from_npm(
@@ -28,18 +28,17 @@ pub async fn install_from_npm(
   let target_temp = TempDir::new(&config.paths.temp)?;
   let target = config.paths.versions_npm.join(&package.version_encoded);
 
-  let url = format!(
-    "{}/{}",
-    c::API_URL,
-    package.version,
-  );
+  let url = format!("{}/{}", c::API_URL, package.version,);
 
   println!("{}", url);
 
   println!("Resolving");
   let response = reqwest::get(&url).await?;
   if response.status() != 200 {
-    return Err(anyhow::anyhow!("Unable to resolve version {}", package.version));
+    return Err(anyhow::anyhow!(
+      "Unable to resolve version {}",
+      package.version
+    ));
   }
 
   let bytes = response.bytes().await?.to_vec();
@@ -49,7 +48,10 @@ pub async fn install_from_npm(
   println!("Downloading");
   let response = reqwest::get(&tarball_url).await?;
   if response.status() != 200 {
-    return Err(anyhow::anyhow!("Unable to download version {}", package.version));
+    return Err(anyhow::anyhow!(
+      "Unable to download version {}",
+      package.version
+    ));
   }
 
   let bytes = response.bytes().await?.to_vec();

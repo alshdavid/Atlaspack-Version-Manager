@@ -56,7 +56,10 @@ pub async fn npm_link_npm(
   fs::create_dir_all(&node_modules_temp)?;
 
   // Set up node_modules/.apvm/version
-  info!("Writing: '{}' to {:?}", package.version_target, node_modules_temp_version);
+  info!(
+    "Writing: '{}' to {:?}",
+    package.version_target, node_modules_temp_version
+  );
   fs::write(
     node_modules_temp_version,
     format!("{}", package.version_target),
@@ -71,10 +74,14 @@ pub async fn npm_link_npm(
 
   info!("Copying: {:?} {:?}", package_lib, node_modules_super);
 
-  fs_extra::dir::copy(&package_lib, &node_modules_super, &CopyOptions{
-    content_only: true,
-    ..Default::default()
-  })?;
+  fs_extra::dir::copy(
+    &package_lib,
+    &node_modules_super,
+    &CopyOptions {
+      content_only: true,
+      ..Default::default()
+    },
+  )?;
 
   #[cfg(unix)]
   {

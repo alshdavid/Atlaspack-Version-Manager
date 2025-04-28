@@ -3,8 +3,8 @@
 mod cmd;
 mod config;
 mod env;
-mod platform;
 mod log;
+mod platform;
 
 use std::path::PathBuf;
 
