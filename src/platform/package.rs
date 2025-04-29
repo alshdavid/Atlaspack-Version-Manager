@@ -64,22 +64,26 @@ impl PackageDescriptor {
   }
 
   pub fn path_real(&self) -> anyhow::Result<PathBuf> {
-    match self.version_target {
-      VersionTarget::Npm(_) => Ok(self.path.clone()),
-      VersionTarget::Git(_) => Ok(self.path.clone()),
-      VersionTarget::Local(_) => Ok(fs::read_link(&self.path)?),
+    if self.path.is_symlink() {
+      return Ok(fs::read_link(&self.path)?);
     }
+
+    Ok(self.path.clone())
   }
 
   pub fn exists(&self) -> anyhow::Result<bool> {
-    if !fs::exists(&self.path)? {
-      return Ok(false);
+    if self.path.is_symlink() {
+      return Ok(true);
     }
 
-    if !fs::exists(&self.path_real()?)? {
-      return Ok(false);
+    if self.path.is_dir() {
+      return Ok(true);
     }
 
-    Ok(true)
+    if self.path.exists() {
+      return Ok(true);
+    }
+
+    Ok(false)
   }
 }
