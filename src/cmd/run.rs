@@ -11,7 +11,7 @@ pub struct RunCommand {
   pub command: Vec<String>,
 }
 
-pub async fn main(
+pub fn main(
   config: Config,
   cmd: RunCommand,
 ) -> anyhow::Result<()> {
@@ -20,6 +20,6 @@ pub async fn main(
   //   return Err(anyhow::anyhow!("No active version installed"));
   // }
 
-  // atlaspack_exec(cmd.command, &config).await?;
+  // atlaspack_exec(cmd.command, &config)?;
   // Ok(())
 }

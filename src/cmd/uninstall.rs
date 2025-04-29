@@ -12,7 +12,7 @@ pub struct UninstallCommand {
   pub version: String,
 }
 
-pub async fn main(
+pub fn main(
   config: Config,
   cmd: UninstallCommand,
 ) -> anyhow::Result<()> {

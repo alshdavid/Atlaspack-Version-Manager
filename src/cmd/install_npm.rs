@@ -20,7 +20,7 @@ struct NpmApiResponseDist {
   tarball: String,
 }
 
-pub async fn install_from_npm(
+pub fn install_from_npm(
   config: Config,
   _cmd: InstallCommand,
   package: PackageDescriptor,
@@ -33,7 +33,7 @@ pub async fn install_from_npm(
   println!("{}", url);
 
   println!("Resolving");
-  let response = reqwest::get(&url).await?;
+  let response = reqwest::blocking::get(&url)?;
   if response.status() != 200 {
     return Err(anyhow::anyhow!(
       "Unable to resolve version {}",
@@ -41,12 +41,12 @@ pub async fn install_from_npm(
     ));
   }
 
-  let bytes = response.bytes().await?.to_vec();
+  let bytes = response.bytes()?.to_vec();
   let data = serde_json::from_slice::<NpmApiResponse>(&bytes)?;
   let tarball_url = data.dist.tarball;
 
   println!("Downloading");
-  let response = reqwest::get(&tarball_url).await?;
+  let response = reqwest::blocking::get(&tarball_url)?;
   if response.status() != 200 {
     return Err(anyhow::anyhow!(
       "Unable to download version {}",
@@ -54,7 +54,7 @@ pub async fn install_from_npm(
     ));
   }
 
-  let bytes = response.bytes().await?.to_vec();
+  let bytes = response.bytes()?.to_vec();
 
   println!("Extracting");
   let tar = GzDecoder::new(bytes.as_slice());

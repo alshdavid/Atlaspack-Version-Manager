@@ -28,7 +28,7 @@ pub struct InstallCommand {
   pub verbose: bool,
 }
 
-pub async fn main(
+pub fn main(
   config: Config,
   cmd: InstallCommand,
 ) -> anyhow::Result<()> {
@@ -62,9 +62,9 @@ pub async fn main(
   // dbg!(&package);
 
   match &version {
-    VersionTarget::Npm(_) => install_from_npm(config, cmd, package).await?,
-    VersionTarget::Git(_) => install_from_git(config, cmd, package).await?,
-    VersionTarget::Local(_) => install_from_local(config, cmd, package).await?,
+    VersionTarget::Npm(_) => install_from_npm(config, cmd, package)?,
+    VersionTarget::Git(_) => install_from_git(config, cmd, package)?,
+    VersionTarget::Local(_) => install_from_local(config, cmd, package)?,
   };
 
   println!(

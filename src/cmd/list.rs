@@ -9,7 +9,7 @@ use crate::platform::package::PackageDescriptor;
 #[derive(Debug, Parser)]
 pub struct ListCommand {}
 
-pub async fn main(
+pub fn main(
   config: Config,
   _cmd: ListCommand,
 ) -> anyhow::Result<()> {

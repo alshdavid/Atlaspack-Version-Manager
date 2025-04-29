@@ -3,7 +3,6 @@
 mod cmd;
 mod config;
 mod env;
-mod log;
 mod platform;
 
 use std::path::PathBuf;
@@ -38,42 +37,43 @@ pub enum ApvmCommandType {
 pub struct ApvmCommand {
   #[clap(subcommand)]
   pub command: ApvmCommandType,
+  /// [default value: "$HOME/.local/apvm"]
   #[arg(env = "APVM_DIR")]
   pub apvm_dir: Option<PathBuf>,
+  /// [possible values: "error", "warn", "info", "debug", "trace"]
   #[arg(env = "RUST_LOG")]
-  pub _rust_log: Option<log::Level>,
+  pub _rust_log: Option<String>,
 }
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
+fn main() -> anyhow::Result<()> {
   env_logger::init();
   let env = Env::parse()?;
   let config = config::Config::new(&env)?;
 
   // If the executable is called "atlaspack" then only proxy
   if &config.exe_stem == "atlaspack" {
-    return cmd::proxy::main(config).await;
+    return cmd::proxy::main(config);
   }
 
   // Calling "apvm atlaspack" will proxy to the active Atlaspack version
   if let Some("atlaspack") = config.argv.first().map(|v| v.as_str()) {
     let mut config = config;
     config.argv.remove(0);
-    return cmd::proxy::main(config).await;
+    return cmd::proxy::main(config);
   }
 
   // APVM Commands
   let args = ApvmCommand::parse();
 
   match args.command {
-    ApvmCommandType::Install(cmd) => cmd::install::main(config, cmd).await,
-    ApvmCommandType::Reinstall(cmd) => cmd::reinstall::main(config, cmd).await,
-    ApvmCommandType::List(cmd) => cmd::list::main(config, cmd).await,
-    ApvmCommandType::Uninstall(cmd) => cmd::uninstall::main(config, cmd).await,
-    ApvmCommandType::Version => cmd::version::main(config).await,
-    ApvmCommandType::Debug(cmd) => cmd::debug::main(config, cmd).await,
-    ApvmCommandType::Default(cmd) => cmd::default::main(config, cmd).await,
-    ApvmCommandType::Npm(cmd) => cmd::npm::main(config, cmd).await,
+    ApvmCommandType::Install(cmd) => cmd::install::main(config, cmd),
+    ApvmCommandType::Reinstall(cmd) => cmd::reinstall::main(config, cmd),
+    ApvmCommandType::List(cmd) => cmd::list::main(config, cmd),
+    ApvmCommandType::Uninstall(cmd) => cmd::uninstall::main(config, cmd),
+    ApvmCommandType::Version => cmd::version::main(config),
+    ApvmCommandType::Debug(cmd) => cmd::debug::main(config, cmd),
+    ApvmCommandType::Default(cmd) => cmd::default::main(config, cmd),
+    ApvmCommandType::Npm(cmd) => cmd::npm::main(config, cmd),
     ApvmCommandType::Atlaspack => unreachable!(),
   }
 }

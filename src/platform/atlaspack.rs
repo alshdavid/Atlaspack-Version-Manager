@@ -9,7 +9,7 @@
 // use crate::platform::origin::VersionTarget;
 // use crate::platform::path_ext::*;
 
-// pub async fn atlaspack_exec(
+// pub fn atlaspack_exec(
 //   command: Vec<String>,
 //   config: &Config,
 // ) -> anyhow::Result<()> {
@@ -70,7 +70,7 @@
 //     }
 //   });
 
-//   rx.await??;
+//   rx??;
 //   Ok(())
 // }
 

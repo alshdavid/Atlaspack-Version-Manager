@@ -13,7 +13,7 @@ pub struct DefaultCommand {
   pub version: String,
 }
 
-pub async fn main(
+pub fn main(
   config: Config,
   cmd: DefaultCommand,
 ) -> anyhow::Result<()> {

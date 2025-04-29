@@ -5,7 +5,7 @@ use crate::config::Config;
 use crate::platform::link;
 use crate::platform::package::PackageDescriptor;
 
-pub async fn install_from_local(
+pub fn install_from_local(
   _config: Config,
   _cmd: InstallCommand,
   package: PackageDescriptor,

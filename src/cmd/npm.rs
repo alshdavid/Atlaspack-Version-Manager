@@ -20,12 +20,12 @@ pub struct NpmCommand {
   pub command: NpmCommandType,
 }
 
-pub async fn main(
+pub fn main(
   config: Config,
   cmd: NpmCommand,
 ) -> anyhow::Result<()> {
   match cmd.command {
-    NpmCommandType::Link(cmd) => super::npm_link::npm_link(config, cmd).await,
+    NpmCommandType::Link(cmd) => super::npm_link::npm_link(config, cmd),
     NpmCommandType::Scan => todo!(),
     NpmCommandType::Dedupe => todo!(),
   }

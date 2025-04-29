@@ -10,7 +10,7 @@ use crate::platform::exec::exec_blocking;
 use crate::platform::package::PackageDescriptor;
 use crate::platform::temp_dir::TempDir;
 
-pub async fn install_from_git(
+pub fn install_from_git(
   config: Config,
   cmd: InstallCommand,
   package: PackageDescriptor,
@@ -32,13 +32,13 @@ pub async fn install_from_git(
   );
 
   println!("Fetching {}", &url);
-  let response = reqwest::get(&url).await?;
+  let response = reqwest::blocking::get(&url)?;
   if response.status() == 404 {
     return Err(anyhow::anyhow!("Version '{}' not found", &package.version));
   }
 
   println!("Downloading");
-  let bytes = response.bytes().await?.to_vec();
+  let bytes = response.bytes()?.to_vec();
 
   println!("Extracting");
   let tar = GzDecoder::new(bytes.as_slice());

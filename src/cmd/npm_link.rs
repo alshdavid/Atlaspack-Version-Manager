@@ -11,7 +11,7 @@ pub struct NpmLinkCommand {
   pub version: Option<String>,
 }
 
-pub async fn npm_link(
+pub fn npm_link(
   config: Config,
   cmd: NpmLinkCommand,
 ) -> anyhow::Result<()> {
@@ -33,16 +33,16 @@ pub async fn npm_link(
   println!("Linking {}", package.version_target);
 
   match version {
-    VersionTarget::Npm(_) => npm_link_npm(config, cmd, package).await?,
-    VersionTarget::Git(_) => npm_link_git(config, cmd, package).await?,
-    VersionTarget::Local(_) => npm_link_local(config, cmd, package).await?,
+    VersionTarget::Npm(_) => npm_link_npm(config, cmd, package)?,
+    VersionTarget::Git(_) => npm_link_git(config, cmd, package)?,
+    VersionTarget::Local(_) => npm_link_local(config, cmd, package)?,
   }
 
   println!("✅ Link completed");
   Ok(())
 }
 
-async fn npm_link_git(
+fn npm_link_git(
   _config: Config,
   _cmd: NpmLinkCommand,
   _package: PackageDescriptor,
@@ -50,7 +50,7 @@ async fn npm_link_git(
   Ok(())
 }
 
-async fn npm_link_local(
+fn npm_link_local(
   _config: Config,
   _cmd: NpmLinkCommand,
   _package: PackageDescriptor,

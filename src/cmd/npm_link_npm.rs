@@ -9,7 +9,7 @@ use crate::config::Config;
 use crate::platform::package::PackageDescriptor;
 use crate::platform::path_ext::*;
 
-pub async fn npm_link_npm(
+pub fn npm_link_npm(
   config: Config,
   _cmd: NpmLinkCommand,
   package: PackageDescriptor,

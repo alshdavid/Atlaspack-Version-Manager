@@ -19,7 +19,7 @@ pub struct DebugCommand {
 }
 
 #[rustfmt::skip]
-pub async fn main(config: Config, cmd: DebugCommand) -> anyhow::Result<()> {
+pub fn main(config: Config, cmd: DebugCommand) -> anyhow::Result<()> {
   
   match cmd.query {
     None => {
