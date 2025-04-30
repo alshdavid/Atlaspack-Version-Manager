@@ -26,6 +26,7 @@ impl ApvmRc {
   ///   "atlaspack": {
   ///     "version": "2.10.0",
   ///     "versions": {
+  ///       "default": "2.10.0",    // If default is specified here, the top level one is ignored
   ///       "next": "2.11.0",
   ///       "arbitrary": "2.12.0"
   ///     }
@@ -62,16 +63,20 @@ impl ApvmRc {
         version_target_aliases: HashMap::new(),
       };
 
+      if let Some(version) = atlaspack.version {
+        apvmrc.version_target = Some(VersionTarget::parse(version)?);
+      };
+
       if let Some(versions) = atlaspack.versions {
         for (alias, specifier) in versions {
+          if alias == "default" {
+            apvmrc.version_target = Some(VersionTarget::parse(specifier)?);
+            continue;
+          }
           apvmrc
             .version_target_aliases
             .insert(alias, VersionTarget::parse(specifier)?);
         }
-      };
-
-      if let Some(version) = atlaspack.version {
-        apvmrc.version_target = Some(VersionTarget::parse(version)?);
       };
 
       return Ok(Some(apvmrc));
