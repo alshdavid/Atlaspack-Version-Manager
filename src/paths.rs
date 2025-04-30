@@ -22,7 +22,7 @@ pub struct Paths {
   /// $APVM_DIR/versions/npm
   pub versions_npm: PathBuf,
   /// $PWD/node_modules/atlaspack/.version (recursive search)
-  pub node_modules_atlaspack_version: Option<PathBuf>,
+  pub node_modules_atlaspack: Option<PathBuf>,
 }
 
 impl Paths {
@@ -34,12 +34,10 @@ impl Paths {
     let apvm_versions_local_dir = apvm_versions_dir.join("local");
     let apvm_versions_git_dir = apvm_versions_dir.join("git");
     let apvm_versions_npm_dir = apvm_versions_dir.join("npm");
-    let node_modules_atlaspack_version = find_ancestor_file(
-      &env.pwd,
-      PathBuf::from_iter(&["node_modules", "atlaspack", ".version"]),
-    )?
-    .first()
-    .cloned();
+    let node_modules_atlaspack =
+      find_ancestor_file(&env.pwd, PathBuf::from_iter(&["node_modules", "atlaspack"]))?
+        .first()
+        .cloned();
 
     if !fs::exists(&apvm_dir)? {
       fs::create_dir(&apvm_dir)?;
@@ -77,7 +75,7 @@ impl Paths {
       versions_local: apvm_versions_local_dir,
       versions_git: apvm_versions_git_dir,
       versions_npm: apvm_versions_npm_dir,
-      node_modules_atlaspack_version,
+      node_modules_atlaspack,
     })
   }
 }

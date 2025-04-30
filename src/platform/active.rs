@@ -1,4 +1,5 @@
 use std::fs;
+use std::path::PathBuf;
 
 use super::origin::VersionTarget;
 use super::package::PackageDescriptor;
@@ -16,40 +17,23 @@ pub enum ActiveType {
 pub struct ActiveVersion {
   pub active_type: ActiveType,
   pub package: PackageDescriptor,
+  pub node_modules_path: Option<PathBuf>,
 }
 
 impl ActiveVersion {
   pub fn detect(paths: &Paths) -> anyhow::Result<Option<Self>> {
     // Detect from node_modules
-    if let Some(atlaspack_version_path) = &paths.node_modules_atlaspack_version {
-      let version = fs::read_to_string(atlaspack_version_path)?;
+    if let Some(atlaspack_version_path) = &paths.node_modules_atlaspack {
+      let version = fs::read_to_string(atlaspack_version_path.join(".version"))?;
       return Ok(Some(ActiveVersion {
         active_type: ActiveType::NodeModules,
         package: PackageDescriptor::parse(paths, &VersionTarget::parse(version)?)?,
+        node_modules_path: Some(atlaspack_version_path.clone()),
       }));
     }
 
-    // Select the version from the current config
-    // if let Some(apvmrc) = &config.apvm_rc {
-    //   let Some(version_target) = &apvmrc.version_target else {
-    //     return Ok(None);
-    //   };
-
-    //   return Ok(Some(ActiveVersion {
-    //     active_type: ActiveType::ProjectConfig,
-    //     package: PackageDescriptor::parse(config, version_target)?,
-    //   }));
-    // }
-
-    // Select the version from the system default
+    // Detect the system default (unlinked)
     // TODO
-    // if fs::exists(&config.paths.global)? {
-    //   let package = PackageDescriptor::parse_from_dir(config, &config.paths.global)?;
-    //   return Ok(Some(ActiveVersion {
-    //     active_type: ActiveType::Global,
-    //     package,
-    //   }));
-    // }
 
     Ok(None)
   }

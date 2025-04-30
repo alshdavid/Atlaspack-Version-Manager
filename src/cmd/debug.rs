@@ -5,6 +5,7 @@ use clap::Parser;
 use clap::Subcommand;
 
 use crate::context::Context;
+use crate::platform::origin::VersionTarget;
 use crate::platform::path_ext::PathExt;
 
 #[derive(Debug, Subcommand, Clone)]
@@ -44,19 +45,34 @@ pub fn main(ctx: Context, cmd: DebugCommand) -> anyhow::Result<()> {
         return Err(anyhow::anyhow!("No version selected"));
       };
 
+      if !matches!(active.package.version_target, VersionTarget::Npm(_)) {
+        return Err(anyhow::anyhow!("Can only resolve npm package type"));
+      }
+
+      let package_path = {
+        if link {
+          let Some(node_modules_path) = active.node_modules_path  else {
+            return Err(anyhow::anyhow!("Not linked into node_modules"));  
+          };
+          node_modules_path
+        } else {
+          active.package.path
+        }
+      };
+
       let Some(specifier) = specifier else {
-        print!("{}", active.package.path.try_to_string()?);
+        print!("{}", package_path.try_to_string()?);
         return Ok(());
       };
 
       match specifier.as_str() {
-        "atlaspack" => print!("{}", active.package.path.try_to_string()?),
+        "atlaspack" => print!("{}", package_path.try_to_string()?),
         name => {
           let Some(name_stripped) = name.strip_prefix("@atlaspack/") else {
             return Err(anyhow::anyhow!("Invalid specifier"));
           };
 
-          for entry in fs::read_dir(active.package.path.join("lib"))? {
+          for entry in fs::read_dir(package_path.join("lib"))? {
             let entry = entry?;
             let entry_path = entry.path();
 
