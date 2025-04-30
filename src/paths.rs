@@ -34,15 +34,12 @@ impl Paths {
     let apvm_versions_local_dir = apvm_versions_dir.join("local");
     let apvm_versions_git_dir = apvm_versions_dir.join("git");
     let apvm_versions_npm_dir = apvm_versions_dir.join("npm");
-    let node_modules_atlaspack_package_json = 'block: {
-      for entry in find_ancestor_file(
-        &env.pwd,
-        PathBuf::from_iter(&["node_modules", "atlaspack", "package.json"]),
-      )? {
-        break 'block Some(entry);
-      }
-      None
-    };
+    let node_modules_atlaspack_package_json = find_ancestor_file(
+      &env.pwd,
+      PathBuf::from_iter(&["node_modules", "atlaspack", "package.json"]),
+    )?
+    .first()
+    .cloned();
 
     if !fs::exists(&apvm_dir)? {
       fs::create_dir(&apvm_dir)?;

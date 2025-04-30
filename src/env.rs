@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use crate::platform::path_ext::*;
 
+#[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct Env {
   pub pwd: PathBuf,

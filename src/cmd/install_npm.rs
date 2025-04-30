@@ -21,12 +21,12 @@ struct NpmApiResponseDist {
 }
 
 pub fn install_from_npm(
-  config: Context,
+  ctx: Context,
   _cmd: InstallCommand,
   package: PackageDescriptor,
 ) -> anyhow::Result<()> {
-  let target_temp = TempDir::new(&config.paths.temp)?;
-  let target = config.paths.versions_npm.join(&package.version_encoded);
+  let target_temp = TempDir::new(&ctx.paths.temp)?;
+  let target = ctx.paths.versions_npm.join(&package.version_encoded);
 
   let url = format!("{}/{}", c::API_URL, package.version,);
 
