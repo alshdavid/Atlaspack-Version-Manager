@@ -10,6 +10,7 @@ pub struct Env {
   pub exe_stem: String,
   pub argv: Vec<String>,
   pub apvm_dir: PathBuf,
+  pub runtime: String,
 }
 
 impl Env {
@@ -30,6 +31,10 @@ impl Env {
       apvm_dir: match std::env::var("APVM_DIR") {
         Ok(apvm_dir) => PathBuf::from(apvm_dir),
         Err(_) => apvm_dir_default()?,
+      },
+      runtime: match std::env::var("APVM_RUNTIME") {
+        Ok(runtime) => runtime,
+        Err(_) => "node".to_string(),
       },
     })
   }

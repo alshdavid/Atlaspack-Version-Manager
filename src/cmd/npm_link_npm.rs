@@ -95,6 +95,11 @@ pub fn npm_link_npm(
     fs::set_permissions(&node_modules_bin_atlaspack, Permissions::from_mode(0o777))?;
   }
 
+  #[cfg(windows)]
+  {
+    todo!()
+  }
+
   // Create node_modules/@atlaspack
   if fs::exists(&node_modules_atlaspack)? {
     info!("Deleting: {:?}", node_modules_atlaspack);

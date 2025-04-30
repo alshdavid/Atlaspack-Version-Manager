@@ -61,6 +61,7 @@ build:
   @mkdir -p "{{out_dir}}"
   cargo build {{profile_cargo}} {{target_cargo}}
   @cp "./target/.cargo/{{target}}/{{profile}}/{{project_name}}" "{{out_dir}}"
+  ln "{{out_dir}}/apvm" "{{out_dir}}/atlaspack"
   @# ln -rs "{{out_dir}}" "{{out_dir_link}}"
 
 [windows]
