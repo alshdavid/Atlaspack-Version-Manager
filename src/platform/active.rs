@@ -25,12 +25,15 @@ impl ActiveVersion {
   pub fn detect(paths: &Paths) -> anyhow::Result<Option<Self>> {
     // Detect from node_modules
     if let Some(atlaspack_version_path) = &paths.node_modules_atlaspack {
-      let version = fs::read_to_string(atlaspack_version_path.join(c::APVM_VERSION_FILE))?;
-      return Ok(Some(ActiveVersion {
-        active_type: ActiveType::NodeModules,
-        package: PackageDescriptor::parse(paths, &VersionTarget::parse(version)?)?,
-        node_modules_path: Some(atlaspack_version_path.clone()),
-      }));
+      let version_path = atlaspack_version_path.join(c::APVM_VERSION_FILE);
+      if fs::exists(&version_path)? {
+        let version = fs::read_to_string(atlaspack_version_path.join(c::APVM_VERSION_FILE))?;
+        return Ok(Some(ActiveVersion {
+          active_type: ActiveType::NodeModules,
+          package: PackageDescriptor::parse(paths, &VersionTarget::parse(version)?)?,
+          node_modules_path: Some(atlaspack_version_path.clone()),
+        }));
+      }
     }
 
     // Detect the system default (unlinked)
