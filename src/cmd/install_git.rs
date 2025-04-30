@@ -7,6 +7,7 @@ use tar::Archive;
 
 use super::install::InstallCommand;
 use crate::context::Context;
+use crate::platform::constants as c;
 use crate::platform::exec::ExecOptions;
 use crate::platform::exec::exec_blocking;
 use crate::platform::package::PackageDescriptor;
@@ -84,7 +85,7 @@ pub fn install_from_git(
   exec_blocking(["yarn", "build-ts"], command_options.clone())?;
 
   fs::write(
-    inner_temp.path().join(".version"),
+    inner_temp.path().join(c::APVM_VERSION_FILE),
     package.version.to_string().as_bytes(),
   )?;
   fs::rename(inner_temp.path(), &target)?;

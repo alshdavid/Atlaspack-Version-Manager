@@ -26,7 +26,7 @@ pub fn main(
     }
 
     if !project_versions.is_empty() {
-      println!("{style_underline}Project Versions: package.json#atlaspack{style_reset}");
+      println!("{style_underline}Project Versions{style_reset} package.json#atlaspack");
       for (version, alias) in project_versions {
         print_name(&version, false, &alias);
       }

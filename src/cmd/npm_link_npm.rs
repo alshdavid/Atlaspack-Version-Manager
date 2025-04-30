@@ -26,8 +26,6 @@ pub fn npm_link_npm(
 
   // node_modules/atlaspack
   let node_modules_super = node_modules.join("atlaspack");
-  let node_modules_temp = node_modules.join(".apvm");
-  let node_modules_temp_version = node_modules_temp.join("version");
 
   // node_modules/@atlaspack
   let node_modules_atlaspack = node_modules.join("@atlaspack");
@@ -47,23 +45,6 @@ pub fn npm_link_npm(
     info!("Deleting: {:?}", node_modules_bin_atlaspack);
     fs::remove_file(&node_modules_bin_atlaspack)?;
   }
-
-  // Delete existing node_modules/.apvm
-  if fs::exists(&node_modules_temp)? {
-    info!("Deleting: {:?}", node_modules_temp);
-    fs::remove_dir_all(&node_modules_temp)?;
-  }
-  fs::create_dir_all(&node_modules_temp)?;
-
-  // Set up node_modules/.apvm/version
-  info!(
-    "Writing: '{}' to {:?}",
-    package.version_target, node_modules_temp_version
-  );
-  fs::write(
-    node_modules_temp_version,
-    format!("{}", package.version_target),
-  )?;
 
   // node_modules/atlaspack
   if fs::exists(&node_modules_super)? {

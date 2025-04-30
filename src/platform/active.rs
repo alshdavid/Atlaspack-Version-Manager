@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 
+use super::constants as c;
 use super::origin::VersionTarget;
 use super::package::PackageDescriptor;
 use crate::paths::Paths;
@@ -8,7 +9,7 @@ use crate::paths::Paths;
 #[allow(unused)]
 #[derive(Debug, Clone)]
 pub enum ActiveType {
-  Global,
+  SystemDefault,
   NodeModules,
 }
 
@@ -24,7 +25,7 @@ impl ActiveVersion {
   pub fn detect(paths: &Paths) -> anyhow::Result<Option<Self>> {
     // Detect from node_modules
     if let Some(atlaspack_version_path) = &paths.node_modules_atlaspack {
-      let version = fs::read_to_string(atlaspack_version_path.join(".version"))?;
+      let version = fs::read_to_string(atlaspack_version_path.join(c::APVM_VERSION_FILE))?;
       return Ok(Some(ActiveVersion {
         active_type: ActiveType::NodeModules,
         package: PackageDescriptor::parse(paths, &VersionTarget::parse(version)?)?,
@@ -33,7 +34,14 @@ impl ActiveVersion {
     }
 
     // Detect the system default (unlinked)
-    // TODO
+    if fs::exists(&paths.global)? {
+      let version = fs::read_to_string(paths.global.join(c::APVM_VERSION_FILE))?;
+      return Ok(Some(ActiveVersion {
+        active_type: ActiveType::SystemDefault,
+        package: PackageDescriptor::parse(paths, &VersionTarget::parse(version)?)?,
+        node_modules_path: None,
+      }));
+    }
 
     Ok(None)
   }

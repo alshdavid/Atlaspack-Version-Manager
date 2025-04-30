@@ -1,6 +1,7 @@
 use std::fs;
 
 use flate2::read::GzDecoder;
+use log::Level;
 use log::info;
 use serde::Deserialize;
 use tar::Archive;
@@ -8,7 +9,11 @@ use tar::Archive;
 use super::install::InstallCommand;
 use crate::context::Context;
 use crate::platform::constants as c;
+use crate::platform::exec::ExecOptions;
+use crate::platform::exec::exec_blocking;
 use crate::platform::package::PackageDescriptor;
+use crate::platform::path_ext::PathExt;
+use crate::platform::runtime::resolve_runtime;
 use crate::platform::temp_dir::TempDir;
 
 #[derive(Debug, Deserialize)]
@@ -29,7 +34,7 @@ pub fn install_from_npm(
   let target_temp = TempDir::new(&ctx.paths.temp)?;
   let target = ctx.paths.versions_npm.join(&package.version_encoded);
 
-  let url = format!("{}/{}", c::API_URL, package.version,);
+  let url = format!("{}/{}", c::NPM_API_URL, package.version,);
 
   info!("{}", url);
 
@@ -67,8 +72,29 @@ pub fn install_from_npm(
     return Err(anyhow::anyhow!("Unable to find inner package"));
   };
 
+  let mut command_options = ExecOptions {
+    cwd: Some(inner_temp.path()),
+    silent: true,
+    ..Default::default()
+  };
+
+  if log::log_enabled!(target: "Global", Level::Info) {
+    command_options.silent = false;
+  };
+
+  // Packages to post-install (todo get rid of these)
+  #[rustfmt::skip]
+  exec_blocking(
+    [
+      resolve_runtime("npm")?.try_to_string()?.as_str(),
+      "install",
+      "lmdb",
+    ],
+    command_options,
+  )?;
+
   fs::write(
-    inner_temp.path().join(".version"),
+    inner_temp.path().join(c::APVM_VERSION_FILE),
     package.version.to_string().as_bytes(),
   )?;
 
