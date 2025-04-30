@@ -78,6 +78,10 @@ pub fn install_from_git(
   println!("Building (TypeScript)");
   exec_blocking(["yarn", "build-ts"], command_options.clone())?;
 
+  fs::write(
+    inner_temp.path().join(".version"),
+    package.version.to_string().as_bytes(),
+  )?;
   fs::rename(inner_temp.path(), &target)?;
 
   Ok(())

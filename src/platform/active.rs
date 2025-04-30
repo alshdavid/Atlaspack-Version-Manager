@@ -1,12 +1,14 @@
+use std::fs;
+
+use super::origin::VersionTarget;
 use super::package::PackageDescriptor;
-use crate::env::Env;
+use crate::paths::Paths;
 
 #[allow(unused)]
 #[derive(Debug, Clone)]
 pub enum ActiveType {
   Global,
-  ProjectConfig,
-  NpmLink,
+  NodeModules,
 }
 
 #[allow(unused)]
@@ -17,8 +19,15 @@ pub struct ActiveVersion {
 }
 
 impl ActiveVersion {
-  pub fn detect(_env: &Env) -> anyhow::Result<Option<Self>> {
+  pub fn detect(paths: &Paths) -> anyhow::Result<Option<Self>> {
     // Detect from node_modules
+    if let Some(atlaspack_version_path) = &paths.node_modules_atlaspack_version {
+      let version = fs::read_to_string(atlaspack_version_path)?;
+      return Ok(Some(ActiveVersion {
+        active_type: ActiveType::NodeModules,
+        package: PackageDescriptor::parse(paths, &VersionTarget::parse(version)?)?,
+      }));
+    }
 
     // Select the version from the current config
     // if let Some(apvmrc) = &config.apvm_rc {

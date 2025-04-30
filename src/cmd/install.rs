@@ -44,7 +44,7 @@ pub fn main(
     },
   };
 
-  let package = PackageDescriptor::parse(&ctx, &version)?;
+  let package = PackageDescriptor::parse(&ctx.paths, &version)?;
   let exists = package.exists()?;
 
   if exists && !cmd.force {

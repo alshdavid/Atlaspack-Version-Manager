@@ -18,7 +18,7 @@ pub fn main(
   cmd: DefaultCommand,
 ) -> anyhow::Result<()> {
   let version_target = VersionTarget::parse(&cmd.version)?;
-  let package = PackageDescriptor::parse(&ctx, &version_target)?;
+  let package = PackageDescriptor::parse(&ctx.paths, &version_target)?;
 
   if !package.exists()? {
     return Err(anyhow::anyhow!("Version not installed"));

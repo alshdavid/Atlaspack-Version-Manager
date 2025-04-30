@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use super::name;
 use super::origin::VersionTarget;
 use super::path_ext::*;
-use crate::context::Context;
+use crate::paths::Paths;
 
 #[allow(unused)]
 #[derive(Debug, Clone, PartialEq)]
@@ -21,13 +21,12 @@ impl PackageDescriptor {
   /// Create a PackageDescriptor from a version target.
   /// This file might not exist
   pub fn parse(
-    ctx: &Context,
+    paths: &Paths,
     version_target: &VersionTarget,
   ) -> anyhow::Result<Self> {
     let version = version_target.version();
     let version_encoded = name::encode(version)?;
-    let path = ctx
-      .paths
+    let path = paths
       .versions
       .join(version_target.origin())
       .join(&version_encoded);
@@ -44,12 +43,12 @@ impl PackageDescriptor {
   /// Try to figure out the type of package using a file path
   /// to the package
   pub fn parse_from_dir(
-    ctx: &Context,
+    paths: &Paths,
     path: &Path,
   ) -> anyhow::Result<Self> {
     let mut path = path.to_path_buf();
-    if path == ctx.paths.global {
-      path = fs::read_link(&ctx.paths.global)?
+    if path == paths.global {
+      path = fs::read_link(&paths.global)?
     }
     let name_encoded = path.file_name().try_to_string()?;
     let name = name::decode(&name_encoded)?;
@@ -58,7 +57,7 @@ impl PackageDescriptor {
     let parent_type = parent.file_name().try_to_string()?;
 
     PackageDescriptor::parse(
-      ctx,
+      paths,
       &VersionTarget::parse(format!("{}:{}", parent_type, name))?,
     )
   }

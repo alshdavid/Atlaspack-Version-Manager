@@ -34,30 +34,32 @@ pub fn main(
     }
   }
 
+  if let Some(active) = ctx.active_version {
+    println!("{style_underline}Active Version{style_reset}");
+    println!("  Version: {}", active.package.version_target);
+    println!("  From:    {:?}", active.active_type);
+    println!();
+  }
+
   println!("{style_underline}Installed Versions{style_reset}");
 
   let npm_versions = fs::read_dir(&ctx.paths.versions_npm)?.collect::<Vec<_>>();
   if !npm_versions.is_empty() {
     for entry in fs::read_dir(&ctx.paths.versions_npm)? {
       let entry = entry?.path();
-      let package = PackageDescriptor::parse_from_dir(&ctx, &entry)?;
+      let package = PackageDescriptor::parse_from_dir(&ctx.paths, &entry)?;
 
       print_name(&package.version, false, "");
     }
-
-    println!();
   } else {
     println!("  <No Versions Installed>");
-    println!();
   }
 
   let local_versions = fs::read_dir(&ctx.paths.versions_local)?.collect::<Vec<_>>();
   if !local_versions.is_empty() {
-    println!("{style_underline}Local Versions{style_reset}");
-
     for entry in local_versions {
       let entry = entry?.path();
-      let package = PackageDescriptor::parse_from_dir(&ctx, &entry)?;
+      let package = PackageDescriptor::parse_from_dir(&ctx.paths, &entry)?;
 
       print_name(
         &package.path_real()?.try_to_string()?,
@@ -65,22 +67,16 @@ pub fn main(
         &format!("({}) ", package.version),
       );
     }
-
-    println!();
   }
 
   let git_versions = fs::read_dir(&ctx.paths.versions_git)?.collect::<Vec<_>>();
   if !git_versions.is_empty() {
-    println!("{style_underline}Git Versions{style_reset}");
-
     for entry in git_versions {
       let entry = entry?.path();
-      let package = PackageDescriptor::parse_from_dir(&ctx, &entry)?;
+      let package = PackageDescriptor::parse_from_dir(&ctx.paths, &entry)?;
 
-      print_name(&package.version, false, "");
+      print_name(&package.version, false, "(git) ");
     }
-
-    println!();
   }
 
   Ok(())

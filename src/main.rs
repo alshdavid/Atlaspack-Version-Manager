@@ -54,7 +54,7 @@ fn main() -> anyhow::Result<()> {
   let env = Env::parse()?;
   let paths = Paths::new(&env)?;
   let apvmrc = ApvmRc::detect(&env.pwd)?;
-  let active_version = ActiveVersion::detect(&env)?;
+  let active_version = ActiveVersion::detect(&paths)?;
   let ctx = context::Context {
     env,
     paths,

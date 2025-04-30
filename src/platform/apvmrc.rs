@@ -1,25 +1,10 @@
 use std::collections::HashMap;
-use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
-use serde::Deserialize;
-
 use super::origin::VersionTarget;
+use super::package_json::PackageJson;
 use super::path_ext::find_ancestor_file;
-
-#[derive(Debug, Deserialize)]
-#[serde(rename = "camelCase")]
-struct PackageJson {
-  pub atlaspack: Option<PackageJsonAtlaspack>,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename = "camelCase")]
-struct PackageJsonAtlaspack {
-  version: Option<String>,
-  versions: Option<HashMap<String, String>>,
-}
 
 #[allow(unused)]
 #[derive(Clone, Debug)]
@@ -63,11 +48,7 @@ impl ApvmRc {
   /// ```
   pub fn detect(start_dir: &Path) -> anyhow::Result<Option<Self>> {
     for package_json_path in find_ancestor_file(start_dir, "package.json")? {
-      let Ok(contents) = fs::read_to_string(&package_json_path) else {
-        continue;
-      };
-
-      let Ok(package_json) = serde_json::from_str::<PackageJson>(&contents) else {
+      let Ok(package_json) = PackageJson::parse_from_file(&package_json_path) else {
         continue;
       };
 

@@ -25,7 +25,7 @@ pub fn npm_link(
     },
   };
 
-  let package = PackageDescriptor::parse(&ctx, &version)?;
+  let package = PackageDescriptor::parse(&ctx.paths, &version)?;
   if !package.exists()? {
     return Err(anyhow::anyhow!("Version not installed"));
   };
