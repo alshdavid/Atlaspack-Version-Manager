@@ -1,4 +1,5 @@
 use std::fs;
+use std::time::SystemTime;
 
 use clap::Parser;
 
@@ -16,6 +17,8 @@ pub fn main(
   ctx: Context,
   cmd: UninstallCommand,
 ) -> anyhow::Result<()> {
+  let start_time = SystemTime::now();
+
   let version_target = VersionTarget::parse(&cmd.version)?;
   let package = PackageDescriptor::parse(&ctx.paths, &version_target)?;
 
@@ -26,7 +29,11 @@ pub fn main(
   println!("Removing {}", cmd.version);
   fs::remove_dir_all(package.path)?;
 
-  println!("Removed");
+  println!(
+    "✅ Uninstalled in {:.2?} ({})",
+    start_time.elapsed()?,
+    cmd.version
+  );
 
   Ok(())
 }

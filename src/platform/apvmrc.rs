@@ -7,7 +7,7 @@ use super::package_json::PackageJson;
 use super::path_ext::find_ancestor_file;
 
 #[allow(unused)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct ApvmRc {
   pub path: PathBuf,
   pub version_target: Option<VersionTarget>,

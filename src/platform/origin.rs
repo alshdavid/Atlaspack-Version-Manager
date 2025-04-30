@@ -1,3 +1,5 @@
+use super::apvmrc::ApvmRc;
+
 #[derive(PartialEq, Eq, Debug, Clone)]
 pub enum VersionTarget {
   Npm(String),
@@ -52,6 +54,35 @@ impl From<VersionTarget> for String {
 impl VersionTarget {
   pub fn parse<S: AsRef<str>>(value: S) -> anyhow::Result<Self> {
     Self::try_from(value.as_ref())
+  }
+
+  pub fn determine(
+    apvmrc: &Option<ApvmRc>,
+    version: &Option<String>,
+  ) -> anyhow::Result<Self> {
+    let version = version.clone().unwrap_or_default();
+    let apvmrc = apvmrc.clone().unwrap_or_default();
+
+    // Order of target selection:
+    // (empty version)  -> package.json#atlaspack.version
+    // version          -> package.json#atlaspack.versions[version]
+    // version          -> lookup (git|npm|local)[version]
+
+    // If the version is empty and there is a default specified in the apvmrc
+    if version.is_empty() {
+      if let Some(target) = apvmrc.version_target {
+        return Ok(target.clone());
+      }
+      return Err(anyhow::anyhow!("No version selected"));
+    }
+
+    // If the version is specified and it matches an alias in the apvmrc
+    if let Some(target) = apvmrc.version_target_aliases.get(&version) {
+      return Ok(target.clone());
+    }
+
+    // Resolve the version specified
+    Self::try_from(version.as_str())
   }
 
   pub fn version(&self) -> &str {

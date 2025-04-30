@@ -34,12 +34,14 @@ pub fn main(
     }
   }
 
+  println!("{style_underline}Active Version{style_reset}");
   if let Some(active) = ctx.active_version {
-    println!("{style_underline}Active Version{style_reset}");
     println!("  Version: {}", active.package.version_target);
     println!("  From:    {:?}", active.active_type);
-    println!();
+  } else {
+    println!("  <No Active Version>");
   }
+  println!();
 
   println!("{style_underline}Installed Versions{style_reset}");
 

@@ -47,6 +47,7 @@ fn npm_link_git(
   _cmd: NpmLinkCommand,
   _package: PackageDescriptor,
 ) -> anyhow::Result<()> {
+  println!("TODO");
   Ok(())
 }
 
@@ -55,5 +56,6 @@ fn npm_link_local(
   _cmd: NpmLinkCommand,
   _package: PackageDescriptor,
 ) -> anyhow::Result<()> {
+  println!("TODO");
   Ok(())
 }

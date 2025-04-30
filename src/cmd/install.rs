@@ -34,21 +34,12 @@ pub fn main(
 ) -> anyhow::Result<()> {
   let start_time = SystemTime::now();
 
-  // Get specifier from CLI or apvm config
-  let version = match &cmd.version {
-    Some(version) => VersionTarget::try_from(version.as_str())?,
-    // Load from config
-    None => match &ctx.active_version {
-      Some(active) => active.package.version_target.clone(),
-      None => return Err(anyhow::anyhow!("No version selected for install")),
-    },
-  };
-
-  let package = PackageDescriptor::parse(&ctx.paths, &version)?;
+  let version_target = VersionTarget::determine(&ctx.apvmrc, &cmd.version)?;
+  let package = PackageDescriptor::parse(&ctx.paths, &version_target)?;
   let exists = package.exists()?;
 
   if exists && !cmd.force {
-    println!("✅ Already installed");
+    println!("✅ Already installed ({})", version_target);
     return Ok(());
   }
 
@@ -57,11 +48,7 @@ pub fn main(
     fs::remove_dir_all(&package.path)?;
   }
 
-  // dbg!(&config);
-  // dbg!(&cmd);
-  // dbg!(&package);
-
-  match &version {
+  match &version_target {
     VersionTarget::Npm(_) => install_from_npm(ctx, cmd, package)?,
     VersionTarget::Git(_) => install_from_git(ctx, cmd, package)?,
     VersionTarget::Local(_) => install_from_local(ctx, cmd, package)?,
@@ -70,7 +57,7 @@ pub fn main(
   println!(
     "✅ Installed in {:.2?} ({})",
     start_time.elapsed()?,
-    version
+    version_target
   );
   Ok(())
 }

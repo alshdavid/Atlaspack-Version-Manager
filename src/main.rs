@@ -69,6 +69,9 @@ fn main() -> anyhow::Result<()> {
 
   // Calling "apvm atlaspack" will proxy to the active Atlaspack version
   if let Some("atlaspack") = ctx.env.argv.first().map(|v| v.as_str()) {
+    // Remove the first arg and forward remaining to the exec proxy
+    // The arg structure is [arg0, command, ...args]
+    // This forwards only "args" to the exec proxy
     let mut ctx = ctx;
     ctx.env.argv.remove(0);
     return cmd::proxy::main(ctx);
