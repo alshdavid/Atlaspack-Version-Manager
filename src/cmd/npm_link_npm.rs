@@ -5,12 +5,12 @@ use fs_extra::dir::CopyOptions;
 use log::info;
 
 use super::npm_link::NpmLinkCommand;
-use crate::config::Config;
+use crate::context::Context;
 use crate::platform::package::PackageDescriptor;
 use crate::platform::path_ext::*;
 
 pub fn npm_link_npm(
-  config: Config,
+  ctx: Context,
   _cmd: NpmLinkCommand,
   package: PackageDescriptor,
 ) -> anyhow::Result<()> {
@@ -18,7 +18,7 @@ pub fn npm_link_npm(
   let package_lib_static = package_lib.join("lib");
 
   // node_modules
-  let node_modules = config.pwd.join("node_modules");
+  let node_modules = ctx.env.pwd.join("node_modules");
   let node_modules_bin = node_modules.join(".bin");
 
   // node_modules/.bin

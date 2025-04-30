@@ -1,10 +1,10 @@
-use crate::config::Config;
+use crate::context::Context;
 use crate::platform::colors::*;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[rustfmt::skip]
-pub fn main(_config: Config) -> anyhow::Result<()> {
+pub fn main(_ctx: Context) -> anyhow::Result<()> {
   println!("{color_red}");
   println!(r#"      __         _______  ___      ___  ___      ___ "#);
   println!(r#"     /""\       |   __ "\|"  \    /"  ||"  \    /"  |"#);

@@ -1,21 +1,35 @@
 use std::path::PathBuf;
 
+use crate::platform::path_ext::*;
+
+#[derive(Debug, Clone)]
 pub struct Env {
-  // pub apvm_runtime: String,
+  pub pwd: PathBuf,
+  pub exe_path: PathBuf,
+  pub exe_stem: String,
+  pub argv: Vec<String>,
   pub apvm_dir: PathBuf,
 }
 
 impl Env {
   pub fn parse() -> anyhow::Result<Self> {
+    let pwd = std::env::current_dir()?;
+
+    let mut argv = std::env::args().collect::<Vec<String>>();
+    argv.remove(0);
+
+    let exe_path = std::env::current_exe()?;
+    let exe_stem = exe_path.try_file_stem()?;
+
     Ok(Self {
+      pwd,
+      exe_path,
+      exe_stem,
+      argv,
       apvm_dir: match std::env::var("APVM_DIR") {
         Ok(apvm_dir) => PathBuf::from(apvm_dir),
         Err(_) => apvm_dir_default()?,
       },
-      // apvm_runtime: match std::env::var("APVM_RUNTIME") {
-      //   Ok(apvm_runtime) => apvm_runtime,
-      //   Err(_) => "node".to_string(),
-      // },
     })
   }
 }

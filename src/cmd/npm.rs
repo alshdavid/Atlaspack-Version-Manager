@@ -2,7 +2,7 @@ use clap::Parser;
 use clap::Subcommand;
 
 use super::npm_link::NpmLinkCommand;
-use crate::config::Config;
+use crate::context::Context;
 
 #[derive(Debug, Subcommand, Clone)]
 pub enum NpmCommandType {
@@ -21,11 +21,11 @@ pub struct NpmCommand {
 }
 
 pub fn main(
-  config: Config,
+  ctx: Context,
   cmd: NpmCommand,
 ) -> anyhow::Result<()> {
   match cmd.command {
-    NpmCommandType::Link(cmd) => super::npm_link::npm_link(config, cmd),
+    NpmCommandType::Link(cmd) => super::npm_link::npm_link(ctx, cmd),
     NpmCommandType::Scan => todo!(),
     NpmCommandType::Dedupe => todo!(),
   }

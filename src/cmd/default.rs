@@ -2,7 +2,7 @@ use std::fs;
 
 use clap::Parser;
 
-use crate::config::Config;
+use crate::context::Context;
 use crate::platform::link;
 use crate::platform::origin::VersionTarget;
 use crate::platform::package::PackageDescriptor;
@@ -14,21 +14,21 @@ pub struct DefaultCommand {
 }
 
 pub fn main(
-  config: Config,
+  ctx: Context,
   cmd: DefaultCommand,
 ) -> anyhow::Result<()> {
   let version_target = VersionTarget::parse(&cmd.version)?;
-  let package = PackageDescriptor::parse(&config, &version_target)?;
+  let package = PackageDescriptor::parse(&ctx, &version_target)?;
 
   if !package.exists()? {
     return Err(anyhow::anyhow!("Version not installed"));
   }
 
-  if fs::exists(&config.paths.global)? {
-    fs::remove_dir_all(&config.paths.global)?;
+  if fs::exists(&ctx.paths.global)? {
+    fs::remove_dir_all(&ctx.paths.global)?;
   }
 
-  link::soft_link(&package.path_real()?, &config.paths.global)?;
+  link::soft_link(&package.path_real()?, &ctx.paths.global)?;
 
   println!("✅ Default version set: {}", version_target);
 

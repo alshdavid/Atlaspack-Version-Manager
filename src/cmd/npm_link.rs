@@ -1,7 +1,7 @@
 use clap::Parser;
 
 use super::npm_link_npm::npm_link_npm;
-use crate::config::Config;
+use crate::context::Context;
 use crate::platform::origin::VersionTarget;
 use crate::platform::package::PackageDescriptor;
 
@@ -12,20 +12,20 @@ pub struct NpmLinkCommand {
 }
 
 pub fn npm_link(
-  config: Config,
+  ctx: Context,
   cmd: NpmLinkCommand,
 ) -> anyhow::Result<()> {
   // Get specifier from CLI or apvm config
   let version = match &cmd.version {
     Some(version) => VersionTarget::try_from(version.as_str())?,
     // Load from config
-    None => match &config.active_version {
+    None => match &ctx.active_version {
       Some(active) => active.package.version_target.clone(),
       None => return Err(anyhow::anyhow!("No version selected for install")),
     },
   };
 
-  let package = PackageDescriptor::parse(&config, &version)?;
+  let package = PackageDescriptor::parse(&ctx, &version)?;
   if !package.exists()? {
     return Err(anyhow::anyhow!("Version not installed"));
   };
@@ -33,9 +33,9 @@ pub fn npm_link(
   println!("Linking {}", package.version_target);
 
   match version {
-    VersionTarget::Npm(_) => npm_link_npm(config, cmd, package)?,
-    VersionTarget::Git(_) => npm_link_git(config, cmd, package)?,
-    VersionTarget::Local(_) => npm_link_local(config, cmd, package)?,
+    VersionTarget::Npm(_) => npm_link_npm(ctx, cmd, package)?,
+    VersionTarget::Git(_) => npm_link_git(ctx, cmd, package)?,
+    VersionTarget::Local(_) => npm_link_local(ctx, cmd, package)?,
   }
 
   println!("✅ Link completed");
@@ -43,7 +43,7 @@ pub fn npm_link(
 }
 
 fn npm_link_git(
-  _config: Config,
+  _ctx: Context,
   _cmd: NpmLinkCommand,
   _package: PackageDescriptor,
 ) -> anyhow::Result<()> {
@@ -51,7 +51,7 @@ fn npm_link_git(
 }
 
 fn npm_link_local(
-  _config: Config,
+  _ctx: Context,
   _cmd: NpmLinkCommand,
   _package: PackageDescriptor,
 ) -> anyhow::Result<()> {

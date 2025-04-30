@@ -2,57 +2,85 @@ use std::fs;
 
 use clap::Parser;
 
-use crate::config::Config;
+use crate::context::Context;
 use crate::platform::colors::*;
 use crate::platform::package::PackageDescriptor;
+use crate::platform::path_ext::*;
 
 #[derive(Debug, Parser)]
 pub struct ListCommand {}
 
 pub fn main(
-  config: Config,
+  ctx: Context,
   _cmd: ListCommand,
 ) -> anyhow::Result<()> {
-  for entry in fs::read_dir(&config.paths.versions_npm)? {
-    let entry = entry?.path();
-    let package = PackageDescriptor::parse_from_dir(&config, &entry)?;
+  if let Some(apvmrc) = &ctx.apvmrc {
+    let mut project_versions = vec![];
 
-    print_name(
-      &package.version,
-      config
-        .active_version
-        .as_ref()
-        .is_some_and(|v| v.package == package),
-      "",
-    );
+    if let Some(default) = &apvmrc.version_target {
+      project_versions.push((default.to_string(), "".to_string()));
+    }
+
+    for (alias, version) in &apvmrc.version_target_aliases {
+      project_versions.push((version.to_string(), format!("({}) ", alias)));
+    }
+
+    if !project_versions.is_empty() {
+      println!("{style_underline}Project Versions: package.json#atlaspack{style_reset}");
+      for (version, alias) in project_versions {
+        print_name(&version, false, &alias);
+      }
+      println!();
+    }
   }
 
-  for entry in fs::read_dir(&config.paths.versions_local)? {
-    let entry = entry?.path();
-    let package = PackageDescriptor::parse_from_dir(&config, &entry)?;
+  println!("{style_underline}Installed Versions{style_reset}");
 
-    print_name(
-      &package.version.to_string(),
-      config
-        .active_version
-        .as_ref()
-        .is_some_and(|v| v.package == package),
-      "(local) ",
-    );
+  let npm_versions = fs::read_dir(&ctx.paths.versions_npm)?.collect::<Vec<_>>();
+  if !npm_versions.is_empty() {
+    for entry in fs::read_dir(&ctx.paths.versions_npm)? {
+      let entry = entry?.path();
+      let package = PackageDescriptor::parse_from_dir(&ctx, &entry)?;
+
+      print_name(&package.version, false, "");
+    }
+
+    println!();
+  } else {
+    println!("  <No Versions Installed>");
+    println!();
   }
 
-  for entry in fs::read_dir(&config.paths.versions_git)? {
-    let entry = entry?.path();
-    let package = PackageDescriptor::parse_from_dir(&config, &entry)?;
+  let local_versions = fs::read_dir(&ctx.paths.versions_local)?.collect::<Vec<_>>();
+  if !local_versions.is_empty() {
+    println!("{style_underline}Local Versions{style_reset}");
 
-    print_name(
-      &package.version,
-      config
-        .active_version
-        .as_ref()
-        .is_some_and(|v| v.package == package),
-      "(git) ",
-    );
+    for entry in local_versions {
+      let entry = entry?.path();
+      let package = PackageDescriptor::parse_from_dir(&ctx, &entry)?;
+
+      print_name(
+        &package.path_real()?.try_to_string()?,
+        false,
+        &format!("({}) ", package.version),
+      );
+    }
+
+    println!();
+  }
+
+  let git_versions = fs::read_dir(&ctx.paths.versions_git)?.collect::<Vec<_>>();
+  if !git_versions.is_empty() {
+    println!("{style_underline}Git Versions{style_reset}");
+
+    for entry in git_versions {
+      let entry = entry?.path();
+      let package = PackageDescriptor::parse_from_dir(&ctx, &entry)?;
+
+      print_name(&package.version, false, "");
+    }
+
+    println!();
   }
 
   Ok(())
@@ -64,8 +92,8 @@ fn print_name(
   prefix: &str,
 ) {
   if active {
-    println!("{color_blue}{style_bold}* {prefix}{name}{color_reset}{style_reset}");
+    println!("{color_blue}{style_bold}  {prefix}{name}{color_reset}{style_reset}");
   } else {
-    println!("* {prefix}{name}");
+    println!("  {prefix}{name}");
   }
 }

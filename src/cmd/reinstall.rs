@@ -1,9 +1,9 @@
 use super::install::InstallCommand;
-use crate::config::Config;
+use crate::context::Context;
 
 pub fn main(
-  config: Config,
+  ctx: Context,
   cmd: InstallCommand,
 ) -> anyhow::Result<()> {
-  super::install::main(config, InstallCommand { force: true, ..cmd })
+  super::install::main(ctx, InstallCommand { force: true, ..cmd })
 }

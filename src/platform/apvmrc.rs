@@ -1,94 +1,99 @@
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
-use json::JsonValue;
+use serde::Deserialize;
 
 use super::origin::VersionTarget;
+use super::path_ext::find_ancestor_file;
+
+#[derive(Debug, Deserialize)]
+#[serde(rename = "camelCase")]
+struct PackageJson {
+  pub atlaspack: Option<PackageJsonAtlaspack>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename = "camelCase")]
+struct PackageJsonAtlaspack {
+  version: Option<String>,
+  versions: Option<HashMap<String, String>>,
+}
 
 #[allow(unused)]
 #[derive(Clone, Debug)]
 pub struct ApvmRc {
   pub path: PathBuf,
-  pub version_target: VersionTarget,
+  pub version_target: Option<VersionTarget>,
+  pub version_target_aliases: HashMap<String, VersionTarget>,
 }
 
 impl ApvmRc {
-  pub fn detect(pwd: &Path) -> anyhow::Result<Option<Self>> {
-    if let Some(apvmrc) = Self::detect_apvmrc(pwd)? {
-      return Ok(Some(apvmrc));
-    };
-
-    if let Some(apvmrc) = Self::detect_package_json(pwd)? {
-      return Ok(Some(apvmrc));
-    };
-
-    Ok(None)
-  }
-
-  /// Scan and parse ".apvmrc"
-  pub fn detect_apvmrc(pwd: &Path) -> anyhow::Result<Option<Self>> {
-    let mut current = pwd.to_path_buf();
-
-    loop {
-      let config_path = current.join(".apvmrc");
-      if fs::exists(&config_path)? {
-        let contents = fs::read_to_string(&config_path)?;
-        for line in contents.lines() {
-          if line.starts_with("#") {
-            continue;
-          }
-          return Ok(Some(Self {
-            path: config_path,
-            version_target: VersionTarget::parse(line.trim())?,
-          }));
-        }
-        todo!();
-      }
-      let Some(next) = current.parent() else {
-        break;
+  /// This will traverse up the directory tree, looking for "package.json"
+  /// and extracting the "package.json#atlaspack.version" keys.
+  ///
+  /// Example:
+  ///
+  /// ```json5
+  /// {
+  ///   "name": "some-package-json",
+  ///   "atlaspack": {
+  ///     "version": "2.10.0",
+  ///     "versions": {
+  ///       "next": "2.11.0",
+  ///       "arbitrary": "2.12.0"
+  ///     }
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// Where the CLI usage is:
+  ///
+  /// ```bash
+  /// # Will install "package.json#atlaspack.version" by default
+  /// npm install @atlaspack/apvm                 # Installs 2.10.0
+  ///
+  /// # Install and link a version by alias
+  /// apvm npm link --install --alias next        # Installs 2.11.0
+  /// apvm npm link -ia arbitrary                 # Installs 2.12.0
+  ///
+  /// # Install and link a version by specifier
+  /// apvm npm link --install 2.13.0              # Installs 2.13.0
+  /// ```
+  pub fn detect(start_dir: &Path) -> anyhow::Result<Option<Self>> {
+    for package_json_path in find_ancestor_file(start_dir, "package.json")? {
+      let Ok(contents) = fs::read_to_string(&package_json_path) else {
+        continue;
       };
-      current = next.to_path_buf();
-    }
 
-    Ok(None)
-  }
-
-  /// Scan and parse "package.json#atlaspack.version"
-  pub fn detect_package_json(pwd: &Path) -> anyhow::Result<Option<Self>> {
-    let mut current = pwd.to_path_buf();
-
-    loop {
-      'block: {
-        let config_path = current.join("package.json");
-
-        if fs::exists(&config_path)? {
-          let contents = fs::read_to_string(&config_path)?;
-          let JsonValue::Object(package_json) = json::parse(&contents)? else {
-            break 'block;
-          };
-
-          let Some(JsonValue::Object(atlaspack)) = package_json.get("atlaspack") else {
-            break 'block;
-          };
-
-          let specifier = match atlaspack.get("version") {
-            Some(JsonValue::String(specifier)) => specifier.clone(),
-            Some(JsonValue::Short(specifier)) => specifier.to_string(),
-            _ => break 'block,
-          };
-
-          return Ok(Some(Self {
-            path: config_path,
-            version_target: VersionTarget::parse(&specifier)?,
-          }));
-        }
-      }
-
-      let Some(next) = current.parent() else {
-        break;
+      let Ok(package_json) = serde_json::from_str::<PackageJson>(&contents) else {
+        continue;
       };
-      current = next.to_path_buf();
+
+      let Some(atlaspack) = package_json.atlaspack else {
+        continue;
+      };
+
+      let mut apvmrc = Self {
+        path: package_json_path,
+        version_target: None,
+        version_target_aliases: HashMap::new(),
+      };
+
+      if let Some(versions) = atlaspack.versions {
+        for (alias, specifier) in versions {
+          apvmrc
+            .version_target_aliases
+            .insert(alias, VersionTarget::parse(specifier)?);
+        }
+      };
+
+      if let Some(version) = atlaspack.version {
+        apvmrc.version_target = Some(VersionTarget::parse(version)?);
+      };
+
+      return Ok(Some(apvmrc));
     }
 
     Ok(None)

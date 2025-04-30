@@ -4,19 +4,19 @@ use flate2::read::GzDecoder;
 use tar::Archive;
 
 use super::install::InstallCommand;
-use crate::config::Config;
+use crate::context::Context;
 use crate::platform::exec::ExecOptions;
 use crate::platform::exec::exec_blocking;
 use crate::platform::package::PackageDescriptor;
 use crate::platform::temp_dir::TempDir;
 
 pub fn install_from_git(
-  config: Config,
+  ctx: Context,
   cmd: InstallCommand,
   package: PackageDescriptor,
 ) -> anyhow::Result<()> {
-  let target_temp = TempDir::new(&config.paths.temp)?;
-  let target = config.paths.versions_git.join(&package.version_encoded);
+  let target_temp = TempDir::new(&ctx.paths.temp)?;
+  let target = ctx.paths.versions_git.join(&package.version_encoded);
 
   if target.exists() && cmd.force {
     println!("Removing existing");

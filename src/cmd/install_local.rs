@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
 use super::install::InstallCommand;
-use crate::config::Config;
+use crate::context::Context;
 use crate::platform::link;
 use crate::platform::package::PackageDescriptor;
 
 pub fn install_from_local(
-  _config: Config,
+  _ctx: Context,
   _cmd: InstallCommand,
   package: PackageDescriptor,
 ) -> anyhow::Result<()> {

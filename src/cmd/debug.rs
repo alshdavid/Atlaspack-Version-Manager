@@ -2,7 +2,8 @@
 use clap::Parser;
 use clap::Subcommand;
 
-use crate::config::Config;
+use crate::context::Context;
+
 // use crate::platform::active::ActivePackage;
 
 #[derive(Debug, Subcommand, Clone)]
@@ -19,11 +20,11 @@ pub struct DebugCommand {
 }
 
 #[rustfmt::skip]
-pub fn main(config: Config, cmd: DebugCommand) -> anyhow::Result<()> {
+pub fn main(ctx: Context, cmd: DebugCommand) -> anyhow::Result<()> {
   
   match cmd.query {
     None => {
-      dbg!(&config);
+      dbg!(&ctx);
     },
     Some(DebugCommandType::RealPath ) => {
       // let active = ActivePackage::try_active_or_global(&config)?;

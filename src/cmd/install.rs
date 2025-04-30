@@ -6,7 +6,7 @@ use clap::Parser;
 use super::install_local::install_from_local;
 use crate::cmd::install_git::install_from_git;
 use crate::cmd::install_npm::install_from_npm;
-use crate::config::Config;
+use crate::context::Context;
 use crate::platform::origin::VersionTarget;
 use crate::platform::package::PackageDescriptor;
 
@@ -29,7 +29,7 @@ pub struct InstallCommand {
 }
 
 pub fn main(
-  config: Config,
+  ctx: Context,
   cmd: InstallCommand,
 ) -> anyhow::Result<()> {
   let start_time = SystemTime::now();
@@ -38,13 +38,13 @@ pub fn main(
   let version = match &cmd.version {
     Some(version) => VersionTarget::try_from(version.as_str())?,
     // Load from config
-    None => match &config.active_version {
+    None => match &ctx.active_version {
       Some(active) => active.package.version_target.clone(),
       None => return Err(anyhow::anyhow!("No version selected for install")),
     },
   };
 
-  let package = PackageDescriptor::parse(&config, &version)?;
+  let package = PackageDescriptor::parse(&ctx, &version)?;
   let exists = package.exists()?;
 
   if exists && !cmd.force {
@@ -62,9 +62,9 @@ pub fn main(
   // dbg!(&package);
 
   match &version {
-    VersionTarget::Npm(_) => install_from_npm(config, cmd, package)?,
-    VersionTarget::Git(_) => install_from_git(config, cmd, package)?,
-    VersionTarget::Local(_) => install_from_local(config, cmd, package)?,
+    VersionTarget::Npm(_) => install_from_npm(ctx, cmd, package)?,
+    VersionTarget::Git(_) => install_from_git(ctx, cmd, package)?,
+    VersionTarget::Local(_) => install_from_local(ctx, cmd, package)?,
   };
 
   println!(

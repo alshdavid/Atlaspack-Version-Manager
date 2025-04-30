@@ -5,7 +5,7 @@ use serde::Deserialize;
 use tar::Archive;
 
 use super::install::InstallCommand;
-use crate::config::Config;
+use crate::context::Context;
 use crate::platform::constants as c;
 use crate::platform::package::PackageDescriptor;
 use crate::platform::temp_dir::TempDir;
@@ -21,7 +21,7 @@ struct NpmApiResponseDist {
 }
 
 pub fn install_from_npm(
-  config: Config,
+  config: Context,
   _cmd: InstallCommand,
   package: PackageDescriptor,
 ) -> anyhow::Result<()> {
