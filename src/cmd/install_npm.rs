@@ -1,6 +1,7 @@
 use std::fs;
 
 use flate2::read::GzDecoder;
+use log::info;
 use serde::Deserialize;
 use tar::Archive;
 
@@ -30,7 +31,7 @@ pub fn install_from_npm(
 
   let url = format!("{}/{}", c::API_URL, package.version,);
 
-  println!("{}", url);
+  info!("{}", url);
 
   println!("Resolving");
   let response = reqwest::blocking::get(&url)?;

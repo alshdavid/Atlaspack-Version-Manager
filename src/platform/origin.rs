@@ -56,7 +56,7 @@ impl VersionTarget {
     Self::try_from(value.as_ref())
   }
 
-  pub fn determine(
+  pub fn resolve(
     apvmrc: &Option<ApvmRc>,
     version: &Option<String>,
   ) -> anyhow::Result<Self> {

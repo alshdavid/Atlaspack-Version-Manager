@@ -51,6 +51,7 @@ pub struct ApvmCommand {
 
 fn main() -> anyhow::Result<()> {
   env_logger::init();
+
   let env = Env::parse()?;
   let paths = Paths::new(&env)?;
   let apvmrc = ApvmRc::detect(&env.pwd)?;

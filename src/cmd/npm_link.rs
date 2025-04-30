@@ -1,6 +1,7 @@
 use clap::Parser;
 
 use super::npm_link_npm::npm_link_npm;
+use crate::cmd::install::InstallCommand;
 use crate::context::Context;
 use crate::platform::origin::VersionTarget;
 use crate::platform::package::PackageDescriptor;
@@ -9,24 +10,29 @@ use crate::platform::package::PackageDescriptor;
 pub struct NpmLinkCommand {
   /// Target version to link
   pub version: Option<String>,
+
+  /// Install if version doesn't exists
+  #[arg(short = 'i', long = "install")]
+  pub install: bool,
 }
 
 pub fn npm_link(
   ctx: Context,
   cmd: NpmLinkCommand,
 ) -> anyhow::Result<()> {
-  // Get specifier from CLI or apvm config
-  let version = match &cmd.version {
-    Some(version) => VersionTarget::try_from(version.as_str())?,
-    // Load from config
-    None => match &ctx.active_version {
-      Some(active) => active.package.version_target.clone(),
-      None => return Err(anyhow::anyhow!("No version selected for install")),
-    },
-  };
-
+  let version = VersionTarget::resolve(&ctx.apvmrc, &cmd.version)?;
   let package = PackageDescriptor::parse(&ctx.paths, &version)?;
-  if !package.exists()? {
+
+  if !package.exists()? && cmd.install {
+    super::install::main(
+      ctx.clone(),
+      InstallCommand {
+        version: cmd.version.clone(),
+        force: true,
+        skip_build: false,
+      },
+    )?;
+  } else if !package.exists()? {
     return Err(anyhow::anyhow!("Version not installed"));
   };
 

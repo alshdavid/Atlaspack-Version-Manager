@@ -1,6 +1,8 @@
 use std::fs;
 
 use flate2::read::GzDecoder;
+use log::Level;
+use log::info;
 use tar::Archive;
 
 use super::install::InstallCommand;
@@ -31,7 +33,7 @@ pub fn install_from_git(
     &package.version
   );
 
-  println!("Fetching {}", &url);
+  info!("Fetching {}", &url);
   let response = reqwest::blocking::get(&url)?;
   if response.status() == 404 {
     return Err(anyhow::anyhow!("Version '{}' not found", &package.version));
@@ -50,10 +52,13 @@ pub fn install_from_git(
     return Err(anyhow::anyhow!("Unable to find inner package"));
   };
 
-  let command_options = ExecOptions {
+  let mut command_options = ExecOptions {
     cwd: Some(inner_temp.path()),
-    silent: !cmd.verbose,
     ..Default::default()
+  };
+
+  if log::log_enabled!(target: "Global", Level::Info) {
+    command_options.silent = false;
   };
 
   if cmd.skip_build {

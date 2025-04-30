@@ -22,10 +22,6 @@ pub struct InstallCommand {
   /// Skips any build steps
   #[arg(long = "skip-build")]
   pub skip_build: bool,
-
-  /// Forward stdout/stderr for the underlying commands
-  #[arg(short = 'v', long = "verbose")]
-  pub verbose: bool,
 }
 
 pub fn main(
@@ -34,7 +30,7 @@ pub fn main(
 ) -> anyhow::Result<()> {
   let start_time = SystemTime::now();
 
-  let version_target = VersionTarget::determine(&ctx.apvmrc, &cmd.version)?;
+  let version_target = VersionTarget::resolve(&ctx.apvmrc, &cmd.version)?;
   let package = PackageDescriptor::parse(&ctx.paths, &version_target)?;
   let exists = package.exists()?;
 
