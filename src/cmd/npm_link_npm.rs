@@ -22,7 +22,10 @@ pub fn npm_link_npm(
   let node_modules_bin = node_modules.join(".bin");
 
   // node_modules/.bin
+  #[cfg(unix)]
   let node_modules_bin_atlaspack = node_modules_bin.join("atlaspack");
+  #[cfg(windows)]
+  let node_modules_bin_atlaspack = node_modules_bin.join("atlaspack.exe");
 
   // node_modules/atlaspack
   let node_modules_super = node_modules.join("atlaspack");
@@ -78,7 +81,8 @@ pub fn npm_link_npm(
 
   #[cfg(windows)]
   {
-    todo!()
+    // Just use a wrapper process for Windows
+    crate::platform::link::hard_link_or_copy(&ctx.env.exe_path, &node_modules_bin_atlaspack)?;
   }
 
   // Create node_modules/@atlaspack

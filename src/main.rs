@@ -14,6 +14,7 @@ use env::Env;
 use paths::Paths;
 use platform::active::ActiveVersion;
 use platform::apvmrc::ApvmRc;
+use platform::atlaspack::atlaspack_exec;
 
 #[derive(Debug, Subcommand)]
 pub enum ApvmCommandType {
@@ -65,7 +66,7 @@ fn main() -> anyhow::Result<()> {
 
   // If the executable is called "atlaspack" then only proxy
   if &ctx.env.exe_stem == "atlaspack" {
-    return cmd::proxy::main(ctx);
+    return atlaspack_exec(&ctx, ctx.env.argv.clone());
   }
 
   // Calling "apvm atlaspack" will proxy to the active Atlaspack version
@@ -75,7 +76,7 @@ fn main() -> anyhow::Result<()> {
     // This forwards only "args" to the exec proxy
     let mut ctx = ctx;
     ctx.env.argv.remove(0);
-    return cmd::proxy::main(ctx);
+    return atlaspack_exec(&ctx, ctx.env.argv.clone());
   }
 
   // APVM Commands
