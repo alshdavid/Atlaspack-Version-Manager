@@ -6,6 +6,7 @@ use log::info;
 
 use super::npm_link::NpmLinkCommand;
 use crate::context::Context;
+use crate::platform::link;
 use crate::platform::package::PackageDescriptor;
 use crate::platform::path_ext::*;
 
@@ -56,6 +57,13 @@ pub fn npm_link_npm(
   }
   fs::create_dir_all(&node_modules_super)?;
 
+  // Create node_modules/@atlaspack
+  if fs::exists(&node_modules_atlaspack)? {
+    info!("Deleting: {:?}", node_modules_atlaspack);
+    fs::remove_dir_all(&node_modules_atlaspack)?
+  }
+  fs::create_dir_all(&node_modules_atlaspack)?;
+
   info!("Copying: {:?} {:?}", package_lib, node_modules_super);
 
   fs_extra::dir::copy(
@@ -66,6 +74,8 @@ pub fn npm_link_npm(
       ..Default::default()
     },
   )?;
+
+  link::soft_link(&node_modules_super, &node_modules_atlaspack.join("super"))?;
 
   #[cfg(unix)]
   {
@@ -84,13 +94,6 @@ pub fn npm_link_npm(
     // Just use a wrapper process for Windows
     crate::platform::link::hard_link_or_copy(&ctx.env.exe_path, &node_modules_bin_atlaspack)?;
   }
-
-  // Create node_modules/@atlaspack
-  if fs::exists(&node_modules_atlaspack)? {
-    info!("Deleting: {:?}", node_modules_atlaspack);
-    fs::remove_dir_all(&node_modules_atlaspack)?
-  }
-  fs::create_dir_all(&node_modules_atlaspack)?;
 
   for entry in fs::read_dir(&package_lib_static)? {
     let entry = entry?;
@@ -117,10 +120,23 @@ pub fn npm_link_npm(
       node_modules_atlaspack_pkg.join("package.json"),
       (json::object! {
         "name": format!("@atlaspack/{file_stem}"),
-        "main": "./index.js"
+        "main": "./index.js",
+        "type": "commonjs"
       })
-      .to_string(),
+      .pretty(2),
     )?;
+
+    if file_stem == "runtime-js" {
+      fs::create_dir_all(node_modules_atlaspack_pkg.join("lib"))?;
+      fs_extra::dir::copy(
+        package_lib_static
+          .join("runtimes")
+          .join("js")
+          .join("helpers"),
+        node_modules_atlaspack_pkg.join("lib"),
+        &CopyOptions::default(),
+      )?;
+    }
 
     fs::write(
       node_modules_atlaspack_pkg.join("index.js"),
